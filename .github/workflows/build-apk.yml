@@ -29,7 +29,7 @@ jobs:
         run: flutter pub get
 
       - name: Build the Android APK
-        run: flutter build apk --split-per-abi
+        run: flutter build apk --debug --split-per-abi
 
       # Uploads the built APKs as a downloadable artifact on this workflow
       # run's summary page — no separate hosting or release step needed.
