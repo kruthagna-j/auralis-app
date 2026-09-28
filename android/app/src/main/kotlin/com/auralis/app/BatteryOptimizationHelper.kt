@@ -1,4 +1,4 @@
-package com.anand.noize
+package com.auralis.app
 
 import android.annotation.SuppressLint
 import android.app.Activity

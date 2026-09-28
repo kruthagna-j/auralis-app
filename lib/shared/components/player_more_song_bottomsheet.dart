@@ -237,7 +237,7 @@ class _PlayerMoreSongBottomSheetState extends State<PlayerMoreSongBottomSheet>
     String shareText,
     String? youtubeLink,
   ) async {
-    const appLink = 'https://noizeapp.netlify.app/';
+    const appLink = 'https://github.com/YOUR-GITHUB-USERNAME/auralis-app';
     try {
       final localSong = pp.currentLocalSong;
       if (localSong != null) {
@@ -259,16 +259,16 @@ class _PlayerMoreSongBottomSheetState extends State<PlayerMoreSongBottomSheet>
         final res = await http.get(Uri.parse(thumbUrl));
         if (res.statusCode == 200) {
           final tempDir = await getTemporaryDirectory();
-          final file = File('${tempDir.path}/noize_share.jpg');
+          final file = File('${tempDir.path}/auralis_share.jpg');
           await file.writeAsBytes(res.bodyBytes);
           await Share.shareXFiles([
             XFile(file.path),
-          ], text: '$shareText\n\nDownload Noize: $appLink');
+          ], text: '$shareText\n\nDownload Auralis: $appLink');
           return;
         }
       }
       SharePlus.instance.share(
-        ShareParams(text: '$shareText\n\nDownload Noize: $appLink'),
+        ShareParams(text: '$shareText\n\nDownload Auralis: $appLink'),
       );
     } catch (_) {
       SharePlus.instance.share(ShareParams(text: shareText));
@@ -359,12 +359,12 @@ class _PlayerMoreSongBottomSheetState extends State<PlayerMoreSongBottomSheet>
     final youtubeLink = videoId != null
         ? 'https://www.youtube.com/watch?v=$videoId'
         : null;
-    const appLink = 'https://noizeapp.netlify.app/';
+    const appLink = 'https://github.com/YOUR-GITHUB-USERNAME/auralis-app';
     final shareText = isLocalSong
         ? '🎵 Listening to "$songTitle" by $songArtist'
         : '🎵 Currently listening to "$songTitle" by $songArtist'
               '${youtubeLink != null ? '\n\n🔗 $youtubeLink' : ''}'
-              '\n\nDownload Noize: $appLink 🎶';
+              '\n\nDownload Auralis: $appLink 🎶';
 
     final bgColor = MainScreenColors.getSurfaceColor(isDarkMode);
     final textColor = MainScreenColors.getTextColor(isDarkMode);

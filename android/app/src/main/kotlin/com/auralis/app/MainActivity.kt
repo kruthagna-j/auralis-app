@@ -1,4 +1,4 @@
-package com.anand.noize
+package com.auralis.app
 
 import android.bluetooth.BluetoothA2dp
 import android.bluetooth.BluetoothManager
@@ -23,9 +23,9 @@ import kotlinx.coroutines.*
 import java.io.ByteArrayOutputStream
 
 class MainActivity : com.ryanheise.audioservice.AudioServiceActivity() {
-    private val CHANNEL = "com.anand.noize/audio_output"
-    private val LOCAL_SONGS_CHANNEL = "com.anand.noize/local_songs"
-    private val BATTERY_OPTIMIZATION_CHANNEL = "com.anand.noize/battery_optimization"
+    private val CHANNEL = "com.auralis.app/audio_output"
+    private val LOCAL_SONGS_CHANNEL = "com.auralis.app/local_songs"
+    private val BATTERY_OPTIMIZATION_CHANNEL = "com.auralis.app/battery_optimization"
     private var bluetoothA2dp: BluetoothA2dp? = null
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val batteryOptimizationHelper by lazy { BatteryOptimizationHelper(this) }

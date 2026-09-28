@@ -513,11 +513,11 @@ class DownloadProvider with ChangeNotifier {
       Directory downloadBaseDir;
       if (Platform.isAndroid) {
         downloadBaseDir = Directory(
-          "/storage/emulated/0/Download/Noize/Downloads",
+          "/storage/emulated/0/Download/Auralis/Downloads",
         );
       } else {
         downloadBaseDir = Directory(
-          '${(await getApplicationDocumentsDirectory()).path}/noize/downloads',
+          '${(await getApplicationDocumentsDirectory()).path}/auralis/downloads',
         );
       }
 

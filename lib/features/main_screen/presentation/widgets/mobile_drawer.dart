@@ -126,7 +126,7 @@ class MainDrawer extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Noize',
+                  'Auralis',
                   style: AppTextStyles.titleLg(isDarkMode: isDarkMode).copyWith(
                     color: Colors.white,
                     fontWeight: AppTextStyles.weightBold,
@@ -214,7 +214,7 @@ class MainDrawer extends StatelessWidget {
                 context,
                 icon: Icons.language,
                 label: 'Website',
-                url: 'https://noizeapp.netlify.app/',
+                url: 'https://github.com/YOUR-GITHUB-USERNAME/auralis-app',
                 color: accentColor,
                 isDarkMode: isDarkMode,
                 iconScale: iconScale,
@@ -223,7 +223,7 @@ class MainDrawer extends StatelessWidget {
                 context,
                 icon: Icons.telegram,
                 label: 'Telegram',
-                url: 'https://t.me/NoizeUpdates',
+                url: 'https://github.com/YOUR-GITHUB-USERNAME/auralis-app',
                 color: accentColor,
                 isDarkMode: isDarkMode,
                 iconScale: iconScale,
@@ -232,7 +232,7 @@ class MainDrawer extends StatelessWidget {
                 context,
                 icon: Icons.code,
                 label: 'GitHub',
-                url: 'https://github.com/anandssm/noize',
+                url: 'https://github.com/YOUR-GITHUB-USERNAME/auralis-app',
                 color: accentColor,
                 isDarkMode: isDarkMode,
                 iconScale: iconScale,
@@ -330,8 +330,8 @@ class MainDrawer extends StatelessWidget {
     await SharePlus.instance.share(
       ShareParams(
         text:
-            'Check out Noize - Your personal music companion!\nhttps://noizeapp.netlify.app/',
-        subject: 'Noize Music App',
+            'Check out Auralis - Your personal music companion!\nhttps://github.com/YOUR-GITHUB-USERNAME/auralis-app',
+        subject: 'Auralis Music App',
       ),
     );
   }

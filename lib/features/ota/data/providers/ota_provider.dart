@@ -14,7 +14,7 @@ import '../../../../core/models/ota_model.dart';
 
 class OTAProvider with ChangeNotifier {
   static const String _baseUpdateUrl =
-      'https://raw.githubusercontent.com/anandssm/noize/refs/heads/main/docs';
+      'https://raw.githubusercontent.com/YOUR-GITHUB-USERNAME/auralis-app/refs/heads/main/docs';
   static const String _lastCheckedKey = 'last_update_check';
   static const String _skipVersionKey = 'skip_version';
 
@@ -51,7 +51,7 @@ class OTAProvider with ChangeNotifier {
     _dio.options = BaseOptions(
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
-      headers: {'User-Agent': 'Noize-Music-App'},
+      headers: {'User-Agent': 'Auralis-Music-App'},
     );
   }
 
@@ -112,8 +112,8 @@ class OTAProvider with ChangeNotifier {
       if (isUpdateAvailable) {
         final directory = await getApplicationDocumentsDirectory();
         final extension = Platform.isAndroid ? 'apk' : 'msix';
-        final fileName = 'noize-music-${updateInfo.latestVersion}.$extension';
-        final filePath = '${directory.path}/noize/$fileName';
+        final fileName = 'auralis-music-${updateInfo.latestVersion}.$extension';
+        final filePath = '${directory.path}/auralis/$fileName';
         final file = File(filePath);
 
         bool isDownloaded = false;
@@ -187,8 +187,8 @@ class OTAProvider with ChangeNotifier {
 
     final directory = await getApplicationDocumentsDirectory();
     final extension = Platform.isAndroid ? 'apk' : 'msix';
-    final fileName = 'noize-music-${_updateInfo!.latestVersion}.$extension';
-    final filePath = '${directory.path}/noize/$fileName';
+    final fileName = 'auralis-music-${_updateInfo!.latestVersion}.$extension';
+    final filePath = '${directory.path}/auralis/$fileName';
     final file = File(filePath);
 
     if (await file.exists()) {
@@ -312,7 +312,7 @@ class OTAProvider with ChangeNotifier {
         final result = await Process.run('powershell', [
           '-Command',
           'Add-AppxPackage -Path "$_downloadedFilePath" -ForceApplicationShutdown; '
-              r"$pkg = Get-AppxPackage -Name 'com.anand.noize'; "
+              r"$pkg = Get-AppxPackage -Name 'com.auralis.app'; "
               r'if ($pkg) { Start-Process "shell:AppsFolder\$($pkg.PackageFamilyName)!App" }',
         ], runInShell: true);
 
@@ -397,7 +397,7 @@ class OTAProvider with ChangeNotifier {
   }
 
   Future<void> openReleasePage() async {
-    const releaseUrl = 'https://github.com/anandssm/noize/releases';
+    const releaseUrl = 'https://github.com/YOUR-GITHUB-USERNAME/auralis-app/releases';
     final uri = Uri.parse(releaseUrl);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);

@@ -68,10 +68,10 @@ class ExportImportSettingsService {
     String directoryPath;
 
     if (defaultTargetPlatform == TargetPlatform.android) {
-      directoryPath = '/storage/emulated/0/Download/Noize/Exports';
+      directoryPath = '/storage/emulated/0/Download/Auralis/Exports';
     } else if (defaultTargetPlatform == TargetPlatform.windows) {
       final directory = await getApplicationDocumentsDirectory();
-      directoryPath = '${directory.path}/noize/exports';
+      directoryPath = '${directory.path}/auralis/exports';
     } else {
       final directory = await getApplicationDocumentsDirectory();
       directoryPath = directory.path;
@@ -83,7 +83,7 @@ class ExportImportSettingsService {
     }
 
     final file = File(
-      '$directoryPath/noize_export_${DateTime.now().millisecondsSinceEpoch}.json',
+      '$directoryPath/auralis_export_${DateTime.now().millisecondsSinceEpoch}.json',
     );
     await file.writeAsString(jsonString);
     return file.path;
@@ -526,7 +526,7 @@ class ExportImportSettingsService {
   }
 
   bool isValidImportFile(String fileName) {
-    return fileName.startsWith('noize_export') && fileName.endsWith('.json');
+    return fileName.startsWith('auralis_export') && fileName.endsWith('.json');
   }
 
   Map<String, bool> detectAvailableDataTypes(Map<String, dynamic> importData) {

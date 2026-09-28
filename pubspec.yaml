@@ -1,5 +1,5 @@
 name: auralis
-description: "Auralis — a powerful, privacy‑first free music experience. (Rebranded from the open-source Noize project by Anand Kumar, GPL-3.0.)"
+description: "Auralis — a free, privacy-first music player."
 
 publish_to: none
 
@@ -118,8 +118,8 @@ dev_dependencies:
 # ─────────────────────────────────────────────
 msix_config:
   display_name: Auralis
-  publisher_display_name: Anand Kumar
-  identity_name: com.anand.noize
+  publisher_display_name: Auralis
+  identity_name: com.auralis.app
   msix_version: 1.0.0.2
   logo_path: assets/default_artwork.png
   capabilities: internetClient,musicLibrary

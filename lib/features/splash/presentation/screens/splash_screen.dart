@@ -3,7 +3,7 @@ import '../../../onboarding/presentation/screens/intro_screen.dart';
 import '../../../main_screen/router/display_route.dart';
 import '../../../../core/services/settings_storage_service.dart';
 
-class NoizeColors {
+class AuralisColors {
   static const Color primaryPurple = Color(0xFF6C63FF);
   static const Color secondaryPink = Color(0xFFFF63B8);
   static const Color backgroundColor = Color(0xFF1A1A1A);
@@ -73,7 +73,7 @@ class _SplashScreenState extends State<SplashScreen>
     return SafeArea(
       top: false,
       child: Scaffold(
-        backgroundColor: NoizeColors.backgroundColor,
+        backgroundColor: AuralisColors.backgroundColor,
         body: LayoutBuilder(
           builder: (context, constraints) {
             return Center(
@@ -99,13 +99,13 @@ class _SplashScreenState extends State<SplashScreen>
                                   borderRadius: BorderRadius.circular(20.0),
                                   gradient: LinearGradient(
                                     colors: [
-                                      NoizeColors.primaryPurple,
-                                      NoizeColors.secondaryPink,
+                                      AuralisColors.primaryPurple,
+                                      AuralisColors.secondaryPink,
                                     ],
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: NoizeColors.primaryPurple
+                                      color: AuralisColors.primaryPurple
                                           .withValues(
                                             alpha:
                                                 0.35 * _opacityAnimation.value,
@@ -114,7 +114,7 @@ class _SplashScreenState extends State<SplashScreen>
                                       spreadRadius: 6.0,
                                     ),
                                     BoxShadow(
-                                      color: NoizeColors.secondaryPink
+                                      color: AuralisColors.secondaryPink
                                           .withValues(
                                             alpha:
                                                 0.25 * _opacityAnimation.value,
@@ -136,7 +136,7 @@ class _SplashScreenState extends State<SplashScreen>
                               ),
                               SizedBox(height: _getResponsiveSpacing(size)),
                               Text(
-                                'Noize',
+                                'Auralis',
                                 style: TextStyle(
                                   fontSize: _getResponsiveFontSize(size),
                                   fontWeight: FontWeight.bold,

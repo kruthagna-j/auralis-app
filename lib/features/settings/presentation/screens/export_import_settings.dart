@@ -606,7 +606,7 @@ class _ExportBottomSheetState extends State<_ExportBottomSheet> {
       );
 
       await SharePlus.instance.share(
-        ShareParams(text: 'Noize export file', files: [XFile(filePath)]),
+        ShareParams(text: 'Auralis export file', files: [XFile(filePath)]),
       );
 
       Navigator.of(context).pop();

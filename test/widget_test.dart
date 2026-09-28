@@ -47,11 +47,11 @@ void main() {
             ),
           ),
         ],
-        child: const NoizeApp(),
+        child: const AuralisApp(),
       ),
     );
 
     // simply verify the root widget exists
-    expect(find.byType(NoizeApp), findsOneWidget);
+    expect(find.byType(AuralisApp), findsOneWidget);
   });
 }

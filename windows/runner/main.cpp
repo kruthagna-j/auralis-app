@@ -12,8 +12,8 @@
 #include "utils.h"
 
 // The AppUserModelID used for SMTC identification.
-static const wchar_t kAppUserModelId[] = L"com.anand.noize";
-static const wchar_t kAppDisplayName[] = L"Noize";
+static const wchar_t kAppUserModelId[] = L"com.auralis.app";
+static const wchar_t kAppDisplayName[] = L"Auralis";
 
 // Creates a Start Menu shortcut with the AppUserModelID so that Windows SMTC
 // can resolve the app name (instead of showing "Unknown app").
@@ -21,12 +21,12 @@ static void EnsureStartMenuShortcut() {
   wchar_t appPath[MAX_PATH];
   if (!::GetModuleFileNameW(nullptr, appPath, MAX_PATH)) return;
 
-  // Build shortcut path: %APPDATA%\Microsoft\Windows\Start Menu\Programs\Noize.lnk
+  // Build shortcut path: %APPDATA%\Microsoft\Windows\Start Menu\Programs\Auralis.lnk
   wchar_t shortcutDir[MAX_PATH];
   if (FAILED(::SHGetFolderPathW(nullptr, CSIDL_PROGRAMS, nullptr, 0, shortcutDir)))
     return;
 
-  std::wstring shortcutPath = std::wstring(shortcutDir) + L"\\Noize.lnk";
+  std::wstring shortcutPath = std::wstring(shortcutDir) + L"\\Auralis.lnk";
 
   IShellLinkW* shellLink = nullptr;
   HRESULT hr = ::CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER,
@@ -79,14 +79,14 @@ static void RegisterFileAssociations() {
   std::wstring exePath(appPath);
   std::wstring cmdTemplate = L"\"" + exePath + L"\" \"%1\"";
 
-  const wchar_t* kProgId = L"NoizeFile";
+  const wchar_t* kProgId = L"AuralisFile";
   std::wstring progIdBase = std::wstring(L"SOFTWARE\\Classes\\") + kProgId;
 
   HKEY hKey = nullptr;
 
   if (::RegCreateKeyExW(HKEY_CURRENT_USER, progIdBase.c_str(), 0, nullptr, 0,
                         KEY_SET_VALUE, nullptr, &hKey, nullptr) == ERROR_SUCCESS) {
-    const wchar_t* displayName = L"Noize File";
+    const wchar_t* displayName = L"Auralis File";
     ::RegSetValueExW(hKey, nullptr, 0, REG_SZ,
                      reinterpret_cast<const BYTE*>(displayName),
                      (static_cast<DWORD>(wcslen(displayName)) + 1) * sizeof(wchar_t));
@@ -187,7 +187,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   }
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(450, 780);
-  if (!window.Create(L"Noize", origin, size)) {
+  if (!window.Create(L"Auralis", origin, size)) {
     return EXIT_FAILURE;
   }
 

@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.anand.noize" "\0"
-            VALUE "FileDescription", "noize" "\0"
+            VALUE "CompanyName", "com.auralis.app" "\0"
+            VALUE "FileDescription", "auralis" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "noize" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2025 com.anand.noize. All rights reserved." "\0"
-            VALUE "OriginalFilename", "noize.exe" "\0"
-            VALUE "ProductName", "noize" "\0"
+            VALUE "InternalName", "auralis" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2025 com.auralis.app. All rights reserved." "\0"
+            VALUE "OriginalFilename", "auralis.exe" "\0"
+            VALUE "ProductName", "auralis" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

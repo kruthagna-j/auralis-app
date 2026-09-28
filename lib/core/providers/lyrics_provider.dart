@@ -230,7 +230,7 @@ class LyricsProvider with ChangeNotifier {
   Future<LyricsResponse?> _readCachedLyrics(String cacheKey) async {
     try {
       final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/noize/$cacheKey');
+      final file = File('${directory.path}/auralis/$cacheKey');
       if (await file.exists()) {
         final content = await file.readAsString();
         final data = json.decode(content);

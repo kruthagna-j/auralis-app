@@ -34,7 +34,7 @@ class _IntroScreenState extends State<IntroScreen>
 
   final List<IntroPage> _pages = [
     const IntroPage(
-      title: 'Welcome to Noize',
+      title: 'Welcome to Auralis',
       subtitle: 'AI-Powered Music Companion',
       svgAsset: 'assets/images/intro_ai_music.svg',
       iconColor: Color(0xFF6366F1),

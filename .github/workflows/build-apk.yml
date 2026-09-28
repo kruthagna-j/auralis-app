@@ -29,6 +29,11 @@ jobs:
         run: flutter pub get
 
       - name: Build the Android APK
+        # A "release" build needs a private signing keystore that only the
+        # original maintainer has (correctly not included in the source —
+        # committing a signing key would be a security mistake). A debug
+        # build is fully functional and uses Android's auto-generated debug
+        # key instead, so it doesn't need one.
         run: flutter build apk --debug --split-per-abi
 
       # Uploads the built APKs as a downloadable artifact on this workflow

@@ -27,12 +27,12 @@ class AboutSettingsScreen extends StatelessWidget {
   }
 
   static const String _baseUrl =
-      'https://raw.githubusercontent.com/anandssm/noize/main/docs/changelogs';
+      'https://raw.githubusercontent.com/YOUR-GITHUB-USERNAME/auralis-app/main/docs/changelogs';
 
   Future<Directory> _changelogDir() async {
     final docs = await getApplicationDocumentsDirectory();
     final dir = Directory(
-      '${docs.path}${Platform.pathSeparator}noize${Platform.pathSeparator}changelogs',
+      '${docs.path}${Platform.pathSeparator}auralis${Platform.pathSeparator}changelogs',
     );
     if (!await dir.exists()) await dir.create(recursive: true);
     return dir;
@@ -410,7 +410,7 @@ class AboutSettingsScreen extends StatelessWidget {
                               ),
                               SizedBox(height: AppDimens.paddingXl),
                               Text(
-                                'app_name_noize'.tr(),
+                                'app_name_auralis'.tr(),
                                 style: isDesktop
                                     ? AppTextStyles.hero(isDarkMode: isDarkMode)
                                     : AppTextStyles.displayLg(
@@ -634,7 +634,7 @@ class AboutSettingsScreen extends StatelessWidget {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              'Anand Kumar',
+                                              'Auralis',
                                               style: AppTextStyles.titleLg(
                                                 isDarkMode: isDarkMode,
                                               ),
@@ -688,7 +688,7 @@ class AboutSettingsScreen extends StatelessWidget {
                                       ),
                                       InkWell(
                                         onTap: () => _launchURL(
-                                          'https://github.com/anandssm',
+                                          'https://github.com/YOUR-GITHUB-USERNAME',
                                         ),
                                         borderRadius: BorderRadius.circular(
                                           AppDimens.radiusLg,
@@ -769,7 +769,7 @@ class AboutSettingsScreen extends StatelessWidget {
 
                           InkWell(
                             onTap: () => _launchURL(
-                              'https://github.com/anandssm/noize/graphs/contributors',
+                              'https://github.com/YOUR-GITHUB-USERNAME/auralis-app/graphs/contributors',
                             ),
                             borderRadius: BorderRadius.circular(
                               AppDimens.radiusXl,
@@ -871,7 +871,7 @@ class AboutSettingsScreen extends StatelessWidget {
                             title: 'github_repository'.tr(),
                             subtitle: 'View source code',
                             onTap: () =>
-                                _launchURL('https://github.com/anandssm/noize'),
+                                _launchURL('https://github.com/YOUR-GITHUB-USERNAME/auralis-app'),
                             isDarkMode: isDarkMode,
                             accentColor: accentColor,
                           ),
@@ -881,9 +881,9 @@ class AboutSettingsScreen extends StatelessWidget {
                           _buildActionCard(
                             icon: Icons.volunteer_activism_rounded,
                             title: 'contribute'.tr(),
-                            subtitle: 'help_improve_noize'.tr(),
+                            subtitle: 'help_improve_auralis'.tr(),
                             onTap: () => _launchURL(
-                              'https://github.com/anandssm/noize/blob/main/CONTRIBUTING.md',
+                              'https://github.com/YOUR-GITHUB-USERNAME/auralis-app/issues',
                             ),
                             isDarkMode: isDarkMode,
                             accentColor: accentColor,
@@ -912,8 +912,8 @@ class AboutSettingsScreen extends StatelessWidget {
                             subtitle: 'open_source_licenses_description'.tr(),
                             onTap: () => showLicensePage(
                               context: context,
-                              applicationName: 'application_name_noize'.tr(),
-                              applicationLegalese: 'application_legalese_noize'
+                              applicationName: 'application_name_auralis'.tr(),
+                              applicationLegalese: 'application_legalese_auralis'
                                   .tr(),
                             ),
                             isDarkMode: isDarkMode,
@@ -980,7 +980,7 @@ class AboutSettingsScreen extends StatelessWidget {
                                               icon: Icons.telegram,
                                               label: 'Telegram',
                                               onTap: () => _launchURL(
-                                                'https://t.me/NoizeUpdates',
+                                                'https://github.com/YOUR-GITHUB-USERNAME/auralis-app',
                                               ),
                                               accentColor: accentColor,
                                               isDarkMode: isDarkMode,
@@ -1004,7 +1004,7 @@ class AboutSettingsScreen extends StatelessWidget {
                                               icon: Icons.language_rounded,
                                               label: 'Website',
                                               onTap: () => _launchURL(
-                                                'https://noizeapp.netlify.app/',
+                                                'https://github.com/YOUR-GITHUB-USERNAME/auralis-app',
                                               ),
                                               accentColor: accentColor,
                                               isDarkMode: isDarkMode,
@@ -1017,7 +1017,7 @@ class AboutSettingsScreen extends StatelessWidget {
                                               icon: Icons.telegram,
                                               label: 'Telegram',
                                               onTap: () => _launchURL(
-                                                'https://t.me/NoizeUpdates',
+                                                'https://github.com/YOUR-GITHUB-USERNAME/auralis-app',
                                               ),
                                               accentColor: accentColor,
                                               isDarkMode: isDarkMode,
@@ -1041,7 +1041,7 @@ class AboutSettingsScreen extends StatelessWidget {
                                               icon: Icons.language_rounded,
                                               label: 'Website',
                                               onTap: () => _launchURL(
-                                                'https://noizeapp.netlify.app/',
+                                                'https://github.com/YOUR-GITHUB-USERNAME/auralis-app',
                                               ),
                                               accentColor: accentColor,
                                               isDarkMode: isDarkMode,
@@ -1059,7 +1059,7 @@ class AboutSettingsScreen extends StatelessWidget {
                             child: Column(
                               children: [
                                 Text(
-                                  '© 2026 Noize',
+                                  '© 2026 Auralis',
                                   style:
                                       AppTextStyles.caption(
                                         isDarkMode: isDarkMode,

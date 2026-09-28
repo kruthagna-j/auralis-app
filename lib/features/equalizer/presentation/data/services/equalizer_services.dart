@@ -44,7 +44,7 @@ class EqualizerService {
   static const String _customPresetsKey = 'custom_presets';
 
   static const Map<String, List<double>> builtInPresets = {
-    'Noize': [5.5, 3.0, 0.5, 0.0, 0.0, 0.8],
+    'Auralis': [5.5, 3.0, 0.5, 0.0, 0.0, 0.8],
     'Flat': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
     'Rock': [4.0, 3.0, -2.0, 1.5, 3.0, 4.0],
     'Pop': [3.5, 2.0, 1.0, 1.0, 2.0, 3.5],
@@ -68,7 +68,7 @@ class EqualizerService {
   ];
 
   bool _equalizerEnabled = false;
-  String _currentPreset = 'Noize';
+  String _currentPreset = 'Auralis';
   Map<String, List<double>> _customPresets = {};
   List<double> _gains = [0, 0, 0, 0, 0, 0];
   MediaKitPlayerAdapter? _playerAdapter;
@@ -99,7 +99,7 @@ class EqualizerService {
       }
     }
 
-    _currentPreset = (box.get(_currentPresetKey) as String?) ?? 'Noize';
+    _currentPreset = (box.get(_currentPresetKey) as String?) ?? 'Auralis';
     final bandGainsString = box.get(_bandGainsKey) as String?;
     if (bandGainsString != null) {
       _gains = bandGainsString

@@ -3,25 +3,25 @@
   "versionCode": 2,
   "abis": {
     "arm64-v8a": {
-      "downloadUrl": "https://github.com/anandssm/noize/releases/download/v1.0.0/app-arm64-v8a-release.apk",
-      "size": "17.4 MB",
-      "checksum": "sha256:c5aa9019b7dd6288b3b673efcfaefc90a9f3c24697336044a2aea89affd99fb4"
+      "downloadUrl": "https://github.com/YOUR-GITHUB-USERNAME/auralis-app/releases/download/v1.0.0/app-arm64-v8a-release.apk",
+      "size": "unknown",
+      "checksum": "sha256:REPLACE_WHEN_PUBLISHING"
     },
     "armeabi-v7a": {
-      "downloadUrl": "https://github.com/anandssm/noize/releases/download/v1.0.0/app-armeabi-v7a-release.apk",
-      "size": "17.1 MB",
-      "checksum": "sha256:9e7810a82d306bb1c9d06eb3d42dbea63b0b44d58b9e8c6643bb2b8d47b5903f"
+      "downloadUrl": "https://github.com/YOUR-GITHUB-USERNAME/auralis-app/releases/download/v1.0.0/app-armeabi-v7a-release.apk",
+      "size": "unknown",
+      "checksum": "sha256:REPLACE_WHEN_PUBLISHING"
     },
     "x86_64": {
-      "downloadUrl": "https://github.com/anandssm/noize/releases/download/v1.0.0/app-x86_64-release.apk",
-      "size": "17.8 MB",
-      "checksum": "sha256:3dffce21f52ddba692b07c6b057e21ac9f5a9da3c2f724b645e61d426d18fda4"
+      "downloadUrl": "https://github.com/YOUR-GITHUB-USERNAME/auralis-app/releases/download/v1.0.0/app-x86_64-release.apk",
+      "size": "unknown",
+      "checksum": "sha256:REPLACE_WHEN_PUBLISHING"
     }
   },
   "releaseDate": "2026-04-15T00:00:00Z",
   "updateLog": [
     "🔔 Reminder: take a backup before updating via Settings > Export screen > Export",
-    "🚀 Noize 1.0.0 is here with unified media_kit playback, equalizer Curve mode, gapless playback, voice search, and audio caching",
+    "🚀 Auralis 1.0.0 is here with unified media_kit playback, equalizer Curve mode, gapless playback, voice search, and audio caching",
     "🎵 Added expanded related songs queue support up to 250 from search",
     "🌍 Added translations and improved language-specific home titles",
     "🛠 Improved playback reliability, equalizer stability, and downloads experience"
@@ -42,5 +42,5 @@
     "Fixed equalizer crashes and audio playback issues",
     "Improved resume playback, lyrics handling, and download controls"
   ],
-  "releaseNotes": "Noize 1.0.0 brings unified media_kit playback, equalizer Curve mode, gapless playback, voice search, and wider translation support. Please backup your data before updating: Settings > Export screen > Export."
+  "releaseNotes": "Auralis 1.0.0 brings unified media_kit playback, equalizer Curve mode, gapless playback, voice search, and wider translation support. Please backup your data before updating: Settings > Export screen > Export."
 }

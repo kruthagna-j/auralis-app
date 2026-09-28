@@ -261,7 +261,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                             ),
                                             child: SettingsItem(
                                               icon: Icons.info,
-                                              title: 'about_noize_card_title'
+                                              title: 'about_auralis_card_title'
                                                   .tr(),
                                               trailing: Icon(
                                                 Icons.arrow_forward_ios,

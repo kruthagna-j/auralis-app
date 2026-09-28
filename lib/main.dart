@@ -113,7 +113,7 @@ Future<void> main() async {
 
       TerminateRestart.instance.initialize();
       final appSupportDir = await getApplicationSupportDirectory();
-      final hiveDir = Directory('${appSupportDir.path}/noize');
+      final hiveDir = Directory('${appSupportDir.path}/auralis');
       if (!await hiveDir.exists()) {
         await hiveDir.create(recursive: true);
       }
@@ -230,7 +230,7 @@ Future<void> main() async {
       final queueProvider = QueueProvider();
       final statsProvider = StatsProvider();
 
-      talker.info('Noize app starting');
+      talker.info('Auralis app starting');
 
       runApp(
         TalkerWrapper(
@@ -310,7 +310,7 @@ Future<void> main() async {
               ],
               path: 'assets/translations',
               fallbackLocale: const Locale('en'),
-              child: const NoizeApp(),
+              child: const AuralisApp(),
             ),
           ),
         ),
@@ -331,14 +331,14 @@ Future<void> main() async {
   );
 }
 
-class NoizeApp extends StatefulWidget {
-  const NoizeApp({super.key});
+class AuralisApp extends StatefulWidget {
+  const AuralisApp({super.key});
 
   @override
-  State<NoizeApp> createState() => _NoizeAppState();
+  State<AuralisApp> createState() => _AuralisAppState();
 }
 
-class _NoizeAppState extends State<NoizeApp> with WidgetsBindingObserver {
+class _AuralisAppState extends State<AuralisApp> with WidgetsBindingObserver {
   IntentService? _intentService;
   WindowsFileService? _windowsFileService;
 
@@ -390,7 +390,7 @@ class _NoizeAppState extends State<NoizeApp> with WidgetsBindingObserver {
       supportedLocales: context.supportedLocales,
       locale: context.locale,
 
-      title: 'Noize',
+      title: 'Auralis',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: settingsProvider.themeMode,

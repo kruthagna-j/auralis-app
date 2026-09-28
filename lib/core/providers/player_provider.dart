@@ -135,8 +135,8 @@ class PlayerProvider extends ChangeNotifier {
           _favoriteSongProvider,
         ),
         config: const AudioServiceConfig(
-          androidNotificationChannelId: 'com.anand.noize',
-          androidNotificationChannelName: 'Noize Playback',
+          androidNotificationChannelId: 'com.auralis.app',
+          androidNotificationChannelName: 'Auralis Playback',
           androidStopForegroundOnPause: true,
           androidShowNotificationBadge: true,
           androidNotificationOngoing: false,
