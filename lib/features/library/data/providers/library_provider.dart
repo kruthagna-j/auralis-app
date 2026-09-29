@@ -60,47 +60,51 @@ class LibraryProvider with ChangeNotifier {
   }
 
   Future<void> _requestPermission() async {
-    if (Platform.isAndroid) {
-      final sdkInt = await _getAndroidVersion();
-      Permission permission;
-      if (sdkInt >= 33) {
-        permission = Permission.audio;
-      } else if (sdkInt >= 30) {
-        permission = Permission.manageExternalStorage;
-      } else {
-        permission = Permission.storage;
-      }
-
-      final currentStatus = await permission.status;
-      if (currentStatus.isGranted) {
-        _localPermissionStatus = LocalPermissionStatus.granted;
-        notifyListeners();
-        await _loadLocalSongs();
-      } else if (currentStatus.isPermanentlyDenied) {
-        _localPermissionStatus = LocalPermissionStatus.permanentlyDenied;
-        notifyListeners();
-      } else {
-        _localPermissionStatus = LocalPermissionStatus.denied;
-        notifyListeners();
-      }
-    } else {
+    if (!Platform.isAndroid) {
       _localPermissionStatus = LocalPermissionStatus.granted;
       notifyListeners();
       await _loadLocalSongs();
+      return;
+    }
+
+    final sdkInt = await _getAndroidVersion();
+    final permission = sdkInt >= 33
+        ? Permission.audio
+        : sdkInt >= 30
+            ? Permission.manageExternalStorage
+            : Permission.storage;
+
+    var status = await permission.status;
+
+    // The previous implementation only reported `denied` here and waited for
+    // the user to discover a separate button. On a fresh Android install that
+    // left the library permanently empty even though the app had requested
+    // nothing. Request the permission during the normal library startup flow.
+    if (status.isDenied) {
+      status = await permission.request();
+    }
+
+    if (status.isGranted) {
+      _localPermissionStatus = LocalPermissionStatus.granted;
+      notifyListeners();
+      await _loadLocalSongs();
+    } else if (status.isPermanentlyDenied || status.isRestricted) {
+      _localPermissionStatus = LocalPermissionStatus.permanentlyDenied;
+      notifyListeners();
+    } else {
+      _localPermissionStatus = LocalPermissionStatus.denied;
+      notifyListeners();
     }
   }
 
   Future<void> requestLocalPermission() async {
     if (Platform.isAndroid) {
       final sdkInt = await _getAndroidVersion();
-      Permission permission;
-      if (sdkInt >= 33) {
-        permission = Permission.audio;
-      } else if (sdkInt >= 30) {
-        permission = Permission.manageExternalStorage;
-      } else {
-        permission = Permission.storage;
-      }
+      final permission = sdkInt >= 33
+          ? Permission.audio
+          : sdkInt >= 30
+              ? Permission.manageExternalStorage
+              : Permission.storage;
 
       if (_localPermissionStatus == LocalPermissionStatus.permanentlyDenied) {
         await openAppSettings();
@@ -109,7 +113,7 @@ class LibraryProvider with ChangeNotifier {
           _localPermissionStatus = LocalPermissionStatus.granted;
           notifyListeners();
           await _loadLocalSongs();
-        } else if (status.isPermanentlyDenied) {
+        } else if (status.isPermanentlyDenied || status.isRestricted) {
           _localPermissionStatus = LocalPermissionStatus.permanentlyDenied;
           notifyListeners();
         } else {
@@ -122,7 +126,7 @@ class LibraryProvider with ChangeNotifier {
           _localPermissionStatus = LocalPermissionStatus.granted;
           notifyListeners();
           await _loadLocalSongs();
-        } else if (status.isPermanentlyDenied) {
+        } else if (status.isPermanentlyDenied || status.isRestricted) {
           _localPermissionStatus = LocalPermissionStatus.permanentlyDenied;
           notifyListeners();
         } else {
@@ -248,6 +252,7 @@ class LibraryProvider with ChangeNotifier {
                 'thumbnail': null,
               },
             )
+            .where((song) => (song['localPath'] as String).isNotEmpty)
             .toList();
       }
 
@@ -355,7 +360,7 @@ class LibraryProvider with ChangeNotifier {
     _isLoading = false;
     notifyListeners();
 
-    _requestPermission();
+    await _requestPermission();
   }
 
   Future<void> _loadLastPlayed() async {
@@ -385,33 +390,6 @@ class LibraryProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-
-  /*
-  List<Map<String, dynamic>> _sortSongs(
-    List<Map<String, dynamic>> songs,
-    String sortBy,
-  ) {
-    switch (sortBy) {
-      case 'title':
-        songs.sort((a, b) => a['title'].compareTo(b['title']));
-        break;
-      case 'artist':
-        songs.sort((a, b) => a['artist'].compareTo(b['artist']));
-        break;
-      case 'duration':
-        songs.sort(
-          (a, b) => (a['duration'] ?? 0).compareTo(b['duration'] ?? 0),
-        );
-        break;
-    }
-    return songs;
-  }
-
-  void setSortBy(String sortBy) {
-    _sortBy = sortBy;
-    notifyListeners();
-  }
-  */
 
   Future<void> refreshLibraryData() async {
     await loadLibraryData();
