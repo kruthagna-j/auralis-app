@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class LocalSongsService {
   static const _channel = MethodChannel('com.auralis.app/local_songs');
@@ -9,6 +12,16 @@ class LocalSongsService {
   LocalSongsService._();
 
   Future<List<Map<String, dynamic>>> querySongs() async {
+    if (Platform.isAndroid) {
+      final permission = await Permission.audio.status;
+      if (!permission.isGranted) {
+        final requested = await Permission.audio.request();
+        if (!requested.isGranted) {
+          return [];
+        }
+      }
+    }
+
     final result = await _channel.invokeMethod<List>('querySongs');
     if (result == null) return [];
     return result.cast<Map>().map((m) => Map<String, dynamic>.from(m)).toList();
