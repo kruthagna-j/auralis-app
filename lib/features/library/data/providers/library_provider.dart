@@ -67,19 +67,11 @@ class LibraryProvider with ChangeNotifier {
       return;
     }
 
-    final sdkInt = await _getAndroidVersion();
-    final permission = sdkInt >= 33
-        ? Permission.audio
-        : sdkInt >= 30
-            ? Permission.manageExternalStorage
-            : Permission.storage;
-
+    final permission = await _androidAudioPermission();
     var status = await permission.status;
 
-    // The previous implementation only reported `denied` here and waited for
-    // the user to discover a separate button. On a fresh Android install that
-    // left the library permanently empty even though the app had requested
-    // nothing. Request the permission during the normal library startup flow.
+    // Request during the normal library startup flow so a fresh install can
+    // populate Local Music without requiring the user to find a hidden action.
     if (status.isDenied) {
       status = await permission.request();
     }
@@ -97,14 +89,17 @@ class LibraryProvider with ChangeNotifier {
     }
   }
 
+  Future<Permission> _androidAudioPermission() async {
+    final sdkInt = await _getAndroidVersion();
+    // Android 13+ has the dedicated READ_MEDIA_AUDIO runtime permission.
+    // Android 10-12 still use READ_EXTERNAL_STORAGE for this purpose; the
+    // MANAGE_EXTERNAL_STORAGE special access is not required for MediaStore.
+    return sdkInt >= 33 ? Permission.audio : Permission.storage;
+  }
+
   Future<void> requestLocalPermission() async {
     if (Platform.isAndroid) {
-      final sdkInt = await _getAndroidVersion();
-      final permission = sdkInt >= 33
-          ? Permission.audio
-          : sdkInt >= 30
-              ? Permission.manageExternalStorage
-              : Permission.storage;
+      final permission = await _androidAudioPermission();
 
       if (_localPermissionStatus == LocalPermissionStatus.permanentlyDenied) {
         await openAppSettings();
