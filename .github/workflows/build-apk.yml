@@ -1,7 +1,5 @@
 name: Build Auralis APK
 
-# Runs automatically on every push to main, and can also be triggered
-# manually from the Actions tab ("Run workflow" button).
 on:
   push:
     branches: [main]
@@ -28,19 +26,12 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build the Android APK
-        # A "release" build needs a private signing keystore that only the
-        # original maintainer has (correctly not included in the source —
-        # committing a signing key would be a security mistake). A debug
-        # build is fully functional and uses Android's auto-generated debug
-        # key instead, so it doesn't need one.
-        run: flutter build apk --debug --split-per-abi
+      - name: Build ARM64 debug APK only
+        run: flutter build apk --debug --target-platform android-arm64
 
-      # Uploads the built APKs as a downloadable artifact on this workflow
-      # run's summary page — no separate hosting or release step needed.
-      - name: Upload APKs
+      - name: Upload ARM64 APK only
         uses: actions/upload-artifact@v4
         with:
-          name: auralis-apk
-          path: build/app/outputs/flutter-apk/*.apk
+          name: auralis-arm64-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
