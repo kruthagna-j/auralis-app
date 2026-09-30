@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 
 import 'yt-stream.dart' as stream_provider;
-import 'jiosaavn_isolate.dart';
 
 Future<Map<String, dynamic>> _fetchYoutubeUrl(
   String videoId,
@@ -91,57 +90,14 @@ Future<Map<String, dynamic>> _fetchManifestDirect(
     final videoId = params['videoId'] as String;
     final streamingQuality = params['streamingQuality'] as String? ?? 'high';
     final forDownloading = params['forDownloading'] as bool? ?? false;
-    final jioSaavnEnabled = params['jioSaavnEnabled'] as bool? ?? true;
-    final title = params['title'] as String?;
-    final artist = params['artist'] as String?;
 
-    Future<Map<String, dynamic>>? jiosaavnFuture;
-    if (jioSaavnEnabled &&
-        title != null &&
-        artist != null &&
-        title.isNotEmpty &&
-        artist.isNotEmpty) {
-      jiosaavnFuture = JioSaavnIsolate.searchSong(
-        title: title,
-        artist: artist,
-        timeout: const Duration(seconds: 3),
-      );
-    }
-
-    final youtubeFuture = _fetchYoutubeUrl(
+    return await _fetchYoutubeUrl(
       videoId,
       streamingQuality,
       forDownloading,
     );
-
-    if (jiosaavnFuture != null) {
-      try {
-        debugPrint('Attempting JioSaavn search for: $title - $artist');
-        final saavnResult = await jiosaavnFuture;
-        if (saavnResult['success'] == true) {
-          final saavnUrl = saavnResult['url'] as String;
-          debugPrint('JioSaavn URL found: $saavnUrl');
-          return {
-            'success': true,
-            'url': saavnUrl,
-            'expiry': null,
-            'bitrate': null,
-            'size': null,
-            'source': 'jiosaavn',
-            'similarity_score': saavnResult['similarity_score'],
-            'duration': saavnResult['duration'],
-          };
-        } else {
-          debugPrint('JioSaavn search failed: ${saavnResult['error']}');
-        }
-      } catch (e) {
-        debugPrint('JioSaavn search error: $e');
-      }
-    }
-
-    return await youtubeFuture;
   } catch (e) {
-    debugPrint('Error fetching manifest: $e');
+    debugPrint('Error fetching YouTube manifest: $e');
     return {'success': false, 'error': e.toString()};
   }
 }
@@ -180,10 +136,7 @@ class AudioUrlIsolate {
       final result = await compute(_fetchManifestDirect, {
         'videoId': videoId,
         'streamingQuality': streamingQuality,
-        'title': title,
-        'artist': artist,
         'forDownloading': forDownloading,
-        'jioSaavnEnabled': jioSaavnEnabled,
         'rootIsolateToken': RootIsolateToken.instance,
       }).timeout(timeout);
 
