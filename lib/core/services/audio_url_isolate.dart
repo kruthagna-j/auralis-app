@@ -104,7 +104,7 @@ Future<Map<String, dynamic>> _fetchManifestDirect(
       jiosaavnFuture = JioSaavnIsolate.searchSong(
         title: title,
         artist: artist,
-        timeout: const Duration(seconds: 8),
+        timeout: const Duration(seconds: 3),
       );
     }
 
