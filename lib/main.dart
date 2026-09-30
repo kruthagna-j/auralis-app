@@ -6,7 +6,6 @@ import 'package:talker_flutter/talker_flutter.dart';
 import 'package:dart_ytmusic_api/dart_ytmusic_api.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_ce/hive.dart';
-import 'package:jiosaavn/jiosaavn.dart';
 import 'package:metadata_god/metadata_god.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:terminate_restart/terminate_restart.dart';
@@ -41,51 +40,29 @@ import 'core/services/windows_file_service.dart';
 
 String _ytMusicHlFromLanguage(String language) {
   switch (language) {
-    case 'Hindi':
-      return 'hi';
-    case 'Spanish':
-      return 'es';
-    case 'French':
-      return 'fr';
-    case 'German':
-      return 'de';
-    case 'Russian':
-      return 'ru';
-    case 'Ukrainian':
-      return 'uk';
-    case 'Bengali':
-      return 'bn';
-    case 'Japanese':
-      return 'ja';
-    case 'Chinese':
-      return 'zh';
-    case 'Urdu':
-      return 'ur';
-    case 'Telugu':
-      return 'te';
-    case 'Tamil':
-      return 'ta';
-    case 'Marathi':
-      return 'mr';
-    case 'Turkish':
-      return 'tr';
-    case 'Gujarati':
-      return 'gu';
-    case 'Kannada':
-      return 'kn';
-    case 'Korean':
-      return 'ko';
-    case 'Indonesian':
-      return 'id';
-    case 'Portuguese':
-      return 'pt';
-    case 'Vietnamese':
-      return 'vi';
-    case 'Arabic':
-      return 'ar';
+    case 'Hindi': return 'hi';
+    case 'Spanish': return 'es';
+    case 'French': return 'fr';
+    case 'German': return 'de';
+    case 'Russian': return 'ru';
+    case 'Ukrainian': return 'uk';
+    case 'Bengali': return 'bn';
+    case 'Japanese': return 'ja';
+    case 'Chinese': return 'zh';
+    case 'Urdu': return 'ur';
+    case 'Telugu': return 'te';
+    case 'Tamil': return 'ta';
+    case 'Marathi': return 'mr';
+    case 'Turkish': return 'tr';
+    case 'Gujarati': return 'gu';
+    case 'Kannada': return 'kn';
+    case 'Korean': return 'ko';
+    case 'Indonesian': return 'id';
+    case 'Portuguese': return 'pt';
+    case 'Vietnamese': return 'vi';
+    case 'Arabic': return 'ar';
     case 'English':
-    default:
-      return 'en';
+    default: return 'en';
   }
 }
 
@@ -93,11 +70,7 @@ Future<void> main() async {
   final talker = TalkerFlutter.init();
 
   FlutterError.onError = (FlutterErrorDetails details) {
-    talker.handle(
-      details.exception,
-      details.stack ?? StackTrace.current,
-      'FlutterError.onError',
-    );
+    talker.handle(details.exception, details.stack ?? StackTrace.current, 'FlutterError.onError');
     FlutterError.presentError(details);
   };
 
@@ -105,18 +78,14 @@ Future<void> main() async {
     () async {
       WidgetsFlutterBinding.ensureInitialized();
       if (Platform.isAndroid || Platform.isIOS) {
-        await SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-        ]);
+        await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
       }
       MediaKit.ensureInitialized();
 
       TerminateRestart.instance.initialize();
       final appSupportDir = await getApplicationSupportDirectory();
       final hiveDir = Directory('${appSupportDir.path}/auralis');
-      if (!await hiveDir.exists()) {
-        await hiveDir.create(recursive: true);
-      }
+      if (!await hiveDir.exists()) await hiveDir.create(recursive: true);
       Hive.init(hiveDir.path);
       Hive.registerAdapter(SongInfoDTOAdapter());
       Hive.registerAdapter(ArtistDTOAdapter());
@@ -131,22 +100,12 @@ Future<void> main() async {
       GetIt.I.registerSingleton<SettingsProvider>(settingsProvider);
 
       const hiveBoxNames = [
-        'liked_songs',
-        'favorite_artists',
-        'audio_url_cache',
-        'saved_playlists',
-        'saved_albums',
-        'created_playlists',
-        'playlist_songs',
-        'last_played',
-        'queue_storage',
-        'video_info_cache',
-        'playback_stats',
-        'recent_playlists',
+        'liked_songs', 'favorite_artists', 'audio_url_cache', 'saved_playlists',
+        'saved_albums', 'created_playlists', 'playlist_songs', 'last_played',
+        'queue_storage', 'video_info_cache', 'playback_stats', 'recent_playlists',
       ];
 
       await Hive.openBox<dynamic>('app_settings');
-
       await Future.wait([
         settingsProvider.loadSettings(),
         Future.wait(hiveBoxNames.map((name) => Hive.openBox<String>(name))),
@@ -168,11 +127,7 @@ Future<void> main() async {
       } catch (_) {}
 
       FlutterError.onError = (FlutterErrorDetails details) {
-        talker.handle(
-          details.exception,
-          details.stack ?? StackTrace.current,
-          'FlutterError.onError',
-        );
+        talker.handle(details.exception, details.stack ?? StackTrace.current, 'FlutterError.onError');
         try {
           GetIt.I<CrashLogService>().recordError(
             details.exception,
@@ -184,27 +139,20 @@ Future<void> main() async {
       };
 
       GetIt.I.registerSingleton<YoutubeExplode>(YoutubeExplode());
-      GetIt.I.registerSingleton<JioSaavnClient>(JioSaavnClient());
 
       final ytMusic = YTMusic();
       final ytMusicHl = _ytMusicHlFromLanguage(settingsProvider.language);
       try {
-        await ytMusic
-            .initialize(hl: ytMusicHl)
-            .timeout(
-              const Duration(seconds: 3),
-              onTimeout: () {
-                talker.warning(
-                  'YTMusic initialization timed out - continuing in offline mode',
-                );
-                return ytMusic;
-              },
-            );
+        await ytMusic.initialize(hl: ytMusicHl).timeout(
+          const Duration(seconds: 3),
+          onTimeout: () {
+            talker.warning('YTMusic initialization timed out - continuing in offline mode');
+            return ytMusic;
+          },
+        );
         talker.info('YTMusic initialized successfully (hl=$ytMusicHl)');
       } catch (e, st) {
-        talker.error(
-          'YTMusic initialization failed: $e - continuing in offline mode',
-        );
+        talker.error('YTMusic initialization failed: $e - continuing in offline mode');
         talker.handle(e, st, 'YTMusic initialization failed');
       }
       GetIt.I.registerSingleton<YTMusic>(ytMusic);
@@ -218,184 +166,70 @@ Future<void> main() async {
       }
 
       if (Platform.isAndroid) {
-        final session = await AudioSession.instance;
-        await session.configure(const AudioSessionConfiguration.music());
+        await IntentService.init();
       }
-      if (Platform.isWindows) {
-        await SmtcService.ensureInitialized();
-      }
-      await MetadataGod.initialize();
 
+      final playerProvider = PlayerProvider();
+      GetIt.I.registerSingleton<PlayerProvider>(playerProvider);
       final downloadProvider = DownloadProvider();
-      final queueProvider = QueueProvider();
+      GetIt.I.registerSingleton<DownloadProvider>(downloadProvider);
+      final queuedProvider = QueuedProvider();
+      GetIt.I.registerSingleton<QueuedProvider>(queuedProvider);
+      final settings = GetIt.I<SettingsProvider>();
+      final favoriteSongProvider = FavoriteSongProvider();
+      GetIt.I.registerSingleton<FavoriteSongProvider>(favoriteSongProvider);
+      final favoriteArtistProvider = FavoriteArtistProvider();
+      GetIt.I.registerSingleton<FavoriteArtistProvider>(favoriteArtistProvider);
+      final libraryProvider = LibraryProvider();
+      GetIt.I.registerSingleton<LibraryProvider>(libraryProvider);
+      final lyricsProvider = LyricsProvider();
+      GetIt.I.registerSingleton<LyricsProvider>(lyricsProvider);
+      final homeScreenProvider = HomeScreenProvider();
+      GetIt.I.registerSingleton<HomeScreenProvider>(homeScreenProvider);
+      final trendingProvider = TrendingProvider();
+      GetIt.I.registerSingleton<TrendingProvider>(trendingProvider);
+      final playlistAlbumLibraryProvider = PlaylistAlbumLibraryProvider();
+      GetIt.I.registerSingleton<PlaylistAlbumLibraryProvider>(playlistAlbumLibraryProvider);
+      final otaProvider = OTAProvider();
+      GetIt.I.registerSingleton<OTAProvider>(otaProvider);
       final statsProvider = StatsProvider();
-
-      talker.info('Auralis app starting');
+      GetIt.I.registerSingleton<StatsProvider>(statsProvider);
 
       runApp(
-        TalkerWrapper(
-          talker: talker,
-          options: const TalkerWrapperOptions(enableErrorAlerts: true),
+        EasyLocalization(
+          supportedLocales: const [
+            Locale('en'), Locale('hi'), Locale('te'), Locale('ta'), Locale('kn'),
+            Locale('ml'), Locale('bn'), Locale('mr'), Locale('gu'), Locale('ur'),
+            Locale('es'), Locale('fr'), Locale('de'), Locale('ru'), Locale('ja'),
+            Locale('ko'), Locale('zh'), Locale('pt'), Locale('tr'), Locale('vi'), Locale('ar'),
+          ],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('en'),
+          startLocale: Locale(settings.languageCode),
           child: MultiProvider(
             providers: [
-              ChangeNotifierProvider.value(value: connectivityProvider),
-              ChangeNotifierProvider(
-                lazy: false,
-                create: (_) => HomeScreenProvider()..initialize(),
-              ),
-              ChangeNotifierProvider(create: (_) => TrendingProvider()),
-              ChangeNotifierProvider.value(value: queueProvider),
+              ChangeNotifierProvider.value(value: settings),
+              ChangeNotifierProvider.value(value: playerProvider),
               ChangeNotifierProvider.value(value: downloadProvider),
+              ChangeNotifierProvider.value(value: queuedProvider),
+              ChangeNotifierProvider.value(value: favoriteSongProvider),
+              ChangeNotifierProvider.value(value: favoriteArtistProvider),
+              ChangeNotifierProvider.value(value: libraryProvider),
+              ChangeNotifierProvider.value(value: lyricsProvider),
+              ChangeNotifierProvider.value(value: homeScreenProvider),
+              ChangeNotifierProvider.value(value: trendingProvider),
+              ChangeNotifierProvider.value(value: playlistAlbumLibraryProvider),
+              ChangeNotifierProvider.value(value: otaProvider),
               ChangeNotifierProvider.value(value: statsProvider),
-              ChangeNotifierProvider(create: (_) => FavoriteSongProvider()),
-              ChangeNotifierProvider(
-                create: (context) => PlayerProvider(
-                  Provider.of<QueueProvider>(context, listen: false),
-                  Provider.of<DownloadProvider>(context, listen: false),
-                  GetIt.I<VideoInfoProvider>(),
-                  Provider.of<StatsProvider>(context, listen: false),
-                  Provider.of<FavoriteSongProvider>(context, listen: false),
-                ),
-              ),
-
-              ChangeNotifierProvider(
-                lazy: false,
-                create: (_) => PlaylistAlbumLibraryProvider()..loadAll(),
-              ),
-              ChangeNotifierProvider.value(value: settingsProvider),
-              ChangeNotifierProvider(
-                lazy: false,
-                create: (_) => FavoriteArtistProvider()..loadFavoriteArtists(),
-              ),
-              ChangeNotifierProvider(
-                create: (context) => LibraryProvider(
-                  Provider.of<PlayerProvider>(context, listen: false),
-                  Provider.of<DownloadProvider>(context, listen: false),
-                  Provider.of<FavoriteSongProvider>(context, listen: false),
-                  Provider.of<SettingsProvider>(context, listen: false),
-                ),
-              ),
-              ChangeNotifierProvider(
-                create: (context) => LyricsProvider(
-                  Provider.of<PlayerProvider>(context, listen: false),
-                ),
-              ),
-              ChangeNotifierProvider(create: (_) => OTAProvider()),
-              ChangeNotifierProvider.value(value: GetIt.I<VideoInfoProvider>()),
+              ChangeNotifierProvider.value(value: connectivityProvider),
             ],
-            child: EasyLocalization(
-              supportedLocales: const [
-                Locale('en'),
-                Locale('hi'),
-                Locale('es'),
-                Locale('fr'),
-                Locale('de'),
-                Locale('ru'),
-                Locale('uk'),
-                Locale('bn'),
-                Locale('ja'),
-                Locale('zh'),
-                Locale('ur'),
-                Locale('te'),
-                Locale('ta'),
-                Locale('mr'),
-                Locale('tr'),
-                Locale('gu'),
-                Locale('kn'),
-                Locale('ko'),
-                Locale('id'),
-                Locale('pt'),
-                Locale('vi'),
-                Locale('ar'),
-              ],
-              path: 'assets/translations',
-              fallbackLocale: const Locale('en'),
-              child: const AuralisApp(),
-            ),
+            child: const SplashScreen(),
           ),
         ),
       );
     },
-    (error, stackTrace) {
-      talker.handle(error, stackTrace, 'Uncaught zone error');
-      try {
-        if (GetIt.I.isRegistered<CrashLogService>()) {
-          GetIt.I<CrashLogService>().recordError(
-            error,
-            stackTrace,
-            'Uncaught zone error',
-          );
-        }
-      } catch (_) {}
+    (error, stack) {
+      talker.handle(error, stack, 'Uncaught zone error');
     },
   );
-}
-
-class AuralisApp extends StatefulWidget {
-  const AuralisApp({super.key});
-
-  @override
-  State<AuralisApp> createState() => _AuralisAppState();
-}
-
-class _AuralisAppState extends State<AuralisApp> with WidgetsBindingObserver {
-  IntentService? _intentService;
-  WindowsFileService? _windowsFileService;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    if (Platform.isAndroid) {
-      _intentService = IntentService(
-        Provider.of<PlayerProvider>(context, listen: false),
-        Provider.of<QueueProvider>(context, listen: false),
-      );
-      _intentService?.init();
-    }
-    if (Platform.isWindows) {
-      _windowsFileService = WindowsFileService(
-        Provider.of<PlayerProvider>(context, listen: false),
-      );
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _windowsFileService?.init();
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _intentService?.dispose();
-    _windowsFileService?.dispose();
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangePlatformBrightness() {
-    super.didChangePlatformBrightness();
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final settingsProvider = Provider.of<SettingsProvider>(context);
-
-    return MaterialApp(
-      navigatorKey: settingsProvider.navigatorKey,
-      navigatorObservers: [],
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
-      locale: context.locale,
-
-      title: 'Auralis',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: settingsProvider.themeMode,
-      builder: AppTextStyles.appBuilder,
-      home: const SplashScreen(),
-    );
-  }
 }
