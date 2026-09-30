@@ -49,11 +49,14 @@ class MediaKitPlayerAdapter {
     Map<String, String>? httpHeaders,
   }) async {
     _cancelPrebuffer();
+    final headers = httpHeaders ?? const <String, String>{
+      'User-Agent':
+          'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/131.0 Mobile Safari/537.36',
+      'Referer': 'https://www.youtube.com/',
+      'Accept': '*/*',
+    };
     await _player.open(
-      Media(
-        uri,
-        httpHeaders: httpHeaders,
-      ),
+      Media(uri, httpHeaders: headers),
       play: play,
     );
   }
@@ -100,7 +103,18 @@ class MediaKitPlayerAdapter {
   Future<void> prebufferUri(String uri, {double? volume}) async {
     await _initNextPlayer(volume: volume);
     try {
-      await _nextPlayer!.open(Media(uri), play: false);
+      await _nextPlayer!.open(
+        Media(
+          uri,
+          httpHeaders: const {
+            'User-Agent':
+                'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/131.0 Mobile Safari/537.36',
+            'Referer': 'https://www.youtube.com/',
+            'Accept': '*/*',
+          },
+        ),
+        play: false,
+      );
       _nextPlayerReady = true;
       debugPrint('[Prebuffer] URI ready');
     } catch (e) {
