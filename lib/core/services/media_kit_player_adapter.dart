@@ -5,22 +5,15 @@ import 'package:media_kit/media_kit.dart';
 
 class MediaKitPlayerAdapter {
   Player _player;
-
   Player? _nextPlayer;
-
   bool _nextPlayerReady = false;
 
   final StreamController<bool> _playingSC = StreamController<bool>.broadcast();
-  final StreamController<Duration> _positionSC =
-      StreamController<Duration>.broadcast();
-  final StreamController<Duration> _durationSC =
-      StreamController<Duration>.broadcast();
-  final StreamController<Duration> _bufferSC =
-      StreamController<Duration>.broadcast();
-  final StreamController<bool> _completedSC =
-      StreamController<bool>.broadcast();
-  final StreamController<bool> _bufferingSC =
-      StreamController<bool>.broadcast();
+  final StreamController<Duration> _positionSC = StreamController<Duration>.broadcast();
+  final StreamController<Duration> _durationSC = StreamController<Duration>.broadcast();
+  final StreamController<Duration> _bufferSC = StreamController<Duration>.broadcast();
+  final StreamController<bool> _completedSC = StreamController<bool>.broadcast();
+  final StreamController<bool> _bufferingSC = StreamController<bool>.broadcast();
 
   StreamSubscription<bool>? _playingSub;
   StreamSubscription<Duration>? _positionSub;
@@ -30,35 +23,22 @@ class MediaKitPlayerAdapter {
   StreamSubscription<bool>? _bufferingSub;
 
   MediaKitPlayerAdapter({Player? player})
-      : _player = player ??
-            Player(
-              configuration: const PlayerConfiguration(
-                bufferSize: 16 * 1024 * 1024,
-              ),
-            ) {
+      : _player = player ?? Player(configuration: const PlayerConfiguration(bufferSize: 16 * 1024 * 1024)) {
     _bindPlayerStreams(_player);
   }
 
   Player get rawPlayer => _player;
-
   bool get isNextTrackReady => _nextPlayerReady;
 
-  Future<void> openUri(
-    String uri, {
-    bool play = false,
-    Map<String, String>? httpHeaders,
-  }) async {
+  static const Map<String, String> _youtubeHeaders = {
+    'User-Agent': 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/131.0 Mobile Safari/537.36',
+    'Referer': 'https://www.youtube.com/',
+    'Accept': '*/*',
+  };
+
+  Future<void> openUri(String uri, {bool play = false, Map<String, String>? httpHeaders}) async {
     _cancelPrebuffer();
-    final headers = httpHeaders ?? const <String, String>{
-      'User-Agent':
-          'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/131.0 Mobile Safari/537.36',
-      'Referer': 'https://www.youtube.com/',
-      'Accept': '*/*',
-    };
-    await _player.open(
-      Media(uri, httpHeaders: headers),
-      play: play,
-    );
+    await _player.open(Media(uri, httpHeaders: httpHeaders ?? _youtubeHeaders), play: play);
   }
 
   Future<void> openPath(String path, {bool play = false}) async {
@@ -66,33 +46,17 @@ class MediaKitPlayerAdapter {
     await _player.open(Media(path), play: play);
   }
 
-  Future<void> play() async {
-    await _player.play();
-  }
-
-  Future<void> pause() async {
-    await _player.pause();
-  }
-
-  Future<void> stop() async {
-    await _player.stop();
-  }
-
-  Future<void> seek(Duration position) async {
-    await _player.seek(position);
-  }
-
-  Future<void> setSpeed(double speed) async {
-    await _player.setRate(speed);
-  }
+  Future<void> play() async => _player.play();
+  Future<void> pause() async => _player.pause();
+  Future<void> stop() async => _player.stop();
+  Future<void> seek(Duration position) async => _player.seek(position);
+  Future<void> setSpeed(double speed) async => _player.setRate(speed);
 
   Future<void> setVolume(double volume) async {
     final clamped = volume.clamp(0.0, 1.5);
     await _player.setVolume(clamped * 100.0);
     if (_nextPlayer != null) {
-      try {
-        await _nextPlayer!.setVolume(clamped * 100.0);
-      } catch (_) {}
+      try { await _nextPlayer!.setVolume(clamped * 100.0); } catch (_) {}
     }
   }
 
@@ -100,21 +64,16 @@ class MediaKitPlayerAdapter {
     await _applyFilterGraphToPlayer(_player, graph);
   }
 
+  Future<void> applyFilterGraphToNextPlayer(String graph) async {
+    final next = _nextPlayer;
+    if (next == null) return;
+    await _applyFilterGraphToPlayer(next, graph);
+  }
+
   Future<void> prebufferUri(String uri, {double? volume}) async {
     await _initNextPlayer(volume: volume);
     try {
-      await _nextPlayer!.open(
-        Media(
-          uri,
-          httpHeaders: const {
-            'User-Agent':
-                'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/131.0 Mobile Safari/537.36',
-            'Referer': 'https://www.youtube.com/',
-            'Accept': '*/*',
-          },
-        ),
-        play: false,
-      );
+      await _nextPlayer!.open(Media(uri, httpHeaders: _youtubeHeaders), play: false);
       _nextPlayerReady = true;
       debugPrint('[Prebuffer] URI ready');
     } catch (e) {
@@ -136,56 +95,33 @@ class MediaKitPlayerAdapter {
   }
 
   Future<bool> swapToPrebuffered() async {
-    if (!_nextPlayerReady || _nextPlayer == null) {
-      debugPrint('[Prebuffer] No prebuffered track to swap to');
-      return false;
-    }
-
+    if (!_nextPlayerReady || _nextPlayer == null) return false;
     final oldPlayer = _player;
     _player = _nextPlayer!;
     _nextPlayer = null;
     _nextPlayerReady = false;
-
     _bindPlayerStreams(_player);
-
     await _player.play();
-
-    unawaited(
-      Future.delayed(const Duration(milliseconds: 200), () async {
-        try {
-          await oldPlayer.stop();
-          await oldPlayer.dispose();
-        } catch (_) {}
-      }),
-    );
-
-    debugPrint('[Prebuffer] Swapped to prebuffered player');
+    unawaited(Future.delayed(const Duration(milliseconds: 200), () async {
+      try { await oldPlayer.stop(); await oldPlayer.dispose(); } catch (_) {}
+    }));
     return true;
   }
 
   void _cancelPrebuffer() {
     _nextPlayerReady = false;
-    if (_nextPlayer != null) {
-      final old = _nextPlayer!;
-      _nextPlayer = null;
-      unawaited(
-        Future(() async {
-          try {
-            await old.stop();
-            await old.dispose();
-          } catch (_) {}
-        }),
-      );
+    final old = _nextPlayer;
+    _nextPlayer = null;
+    if (old != null) {
+      unawaited(Future(() async {
+        try { await old.stop(); await old.dispose(); } catch (_) {}
+      }));
     }
   }
 
   Future<void> _initNextPlayer({double? volume}) async {
     _cancelPrebuffer();
-    _nextPlayer = Player(
-      configuration: const PlayerConfiguration(
-        bufferSize: 16 * 1024 * 1024,
-      ),
-    );
+    _nextPlayer = Player(configuration: const PlayerConfiguration(bufferSize: 16 * 1024 * 1024));
     if (volume != null) {
       final clamped = volume.clamp(0.0, 1.5);
       await _nextPlayer!.setVolume(clamped * 100.0);
@@ -199,25 +135,12 @@ class MediaKitPlayerAdapter {
     _bufferSub?.cancel();
     _completedSub?.cancel();
     _bufferingSub?.cancel();
-
-    _playingSub = (player as dynamic).stream.playing.listen((bool v) {
-      _playingSC.add(v);
-    });
-    _positionSub = (player as dynamic).stream.position.listen((Duration v) {
-      _positionSC.add(v);
-    });
-    _durationSub = (player as dynamic).stream.duration.listen((Duration v) {
-      _durationSC.add(v);
-    });
-    _bufferSub = (player as dynamic).stream.buffer.listen((Duration v) {
-      _bufferSC.add(v);
-    });
-    _completedSub = (player as dynamic).stream.completed.listen((bool v) {
-      _completedSC.add(v);
-    });
-    _bufferingSub = (player as dynamic).stream.buffering.listen((bool v) {
-      _bufferingSC.add(v);
-    });
+    _playingSub = player.stream.playing.listen(_playingSC.add);
+    _positionSub = player.stream.position.listen(_positionSC.add);
+    _durationSub = player.stream.duration.listen(_durationSC.add);
+    _bufferSub = player.stream.buffer.listen(_bufferSC.add);
+    _completedSub = player.stream.completed.listen(_completedSC.add);
+    _bufferingSub = player.stream.buffering.listen(_bufferingSC.add);
   }
 
   Stream<bool> get playingStream => _playingSC.stream;
@@ -226,66 +149,28 @@ class MediaKitPlayerAdapter {
   Stream<Duration> get bufferedPositionStream => _bufferSC.stream;
   Stream<bool> get completedStream => _completedSC.stream;
   Stream<bool> get bufferingStream => _bufferingSC.stream;
+  Stream<int> get playlistIndexStream => _player.stream.index;
 
-  Stream<int> get playlistIndexStream =>
-      (_player as dynamic).stream.index as Stream<int>;
-
-  bool get currentPlaying {
-    try {
-      return (_player as dynamic).state.playing as bool;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  Duration get currentPosition {
-    try {
-      return (_player as dynamic).state.position as Duration;
-    } catch (_) {
-      return Duration.zero;
-    }
-  }
-
-  Duration get currentBuffered {
-    try {
-      return (_player as dynamic).state.buffer as Duration;
-    } catch (_) {
-      return Duration.zero;
-    }
-  }
-
-  Duration? get currentDuration {
-    try {
-      return (_player as dynamic).state.duration as Duration?;
-    } catch (_) {
-      return null;
-    }
-  }
-
+  bool get currentPlaying => _player.state.playing;
+  Duration get currentPosition => _player.state.position;
+  Duration get currentBuffered => _player.state.buffer;
+  Duration? get currentDuration => _player.state.duration;
   bool get currentPlayingState => currentPlaying;
 
   Future<void> dispose() async {
-    _playingSub?.cancel();
-    _positionSub?.cancel();
-    _durationSub?.cancel();
-    _bufferSub?.cancel();
-    _completedSub?.cancel();
-    _bufferingSub?.cancel();
+    _playingSub?.cancel(); _positionSub?.cancel(); _durationSub?.cancel();
+    _bufferSub?.cancel(); _completedSub?.cancel(); _bufferingSub?.cancel();
     _cancelPrebuffer();
     await _player.dispose();
-    await _playingSC.close();
-    await _positionSC.close();
-    await _durationSC.close();
-    await _bufferSC.close();
-    await _completedSC.close();
-    await _bufferingSC.close();
+    await _playingSC.close(); await _positionSC.close(); await _durationSC.close();
+    await _bufferSC.close(); await _completedSC.close(); await _bufferingSC.close();
   }
 
   Future<void> _applyFilterGraphToPlayer(Player player, String graph) async {
     try {
-      await player.setAudioFilterGraph(graph);
+      await (player as dynamic).setAudioFilterGraph(graph);
     } catch (e) {
-      debugPrint('Failed to apply audio filter graph: $e');
+      debugPrint('Audio filter graph is unavailable in this media_kit version: $e');
     }
   }
 }
