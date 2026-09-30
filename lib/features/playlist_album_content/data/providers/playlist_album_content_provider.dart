@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:dart_ytmusic_api/dart_ytmusic_api.dart';
+import 'package:get_it/get_it.dart';
 import '../../../../core/services/content_details_service.dart';
+import '../../../../core/models/song_model.dart';
 import '../../../playlists/data/providers/playlist_album_library_provider.dart';
 import '../../../../core/providers/player_provider.dart';
 import '../../../../core/providers/queued_provider.dart';
@@ -9,6 +11,7 @@ import '../../../../core/providers/download_provider.dart';
 
 class PlaylistAlbumContentProvider extends ChangeNotifier {
   final ContentDetailsService _contentService = ContentDetailsService();
+  final YTMusic _ytMusic = GetIt.I<YTMusic>();
 
   dynamic _content;
   bool _isLoading = true;
@@ -32,15 +35,53 @@ class PlaylistAlbumContentProvider extends ChangeNotifier {
   Future<void> loadContent(dynamic content) async {
     _content = content;
     try {
-      final contentData = await _contentService.loadContentSongs(content);
-      final totalSeconds = contentData['allSongs'].fold(
-        0,
-        (sum, song) => sum + song.duration.inSeconds,
-      );
-      _songs = contentData['songs'];
-      _allSongs = contentData['allSongs'];
-      _contentDescription = contentData['description'];
-      _totalDuration = Duration(seconds: totalSeconds);
+      if (content is AlbumDetailed) {
+        final album = await _ytMusic.getAlbum(content.albumId);
+        final transformedSongs = album.songs.map((song) {
+          return SongInfo(
+            videoId: song.videoId,
+            name: song.name,
+            artists: [
+              Artist(
+                name: song.artist.name,
+                id: song.artist.artistId ?? '',
+              ),
+            ],
+            thumbnails: song.thumbnails
+                .map(
+                  (thumbnail) => Thumbnail(
+                    url: thumbnail.url,
+                    width: thumbnail.width,
+                    height: thumbnail.height,
+                  ),
+                )
+                .toList(),
+            duration: Duration(seconds: song.duration ?? 0),
+          );
+        }).where((song) => song.videoId.isNotEmpty).toList();
+
+        _songs = transformedSongs;
+        _allSongs = transformedSongs;
+        _contentDescription =
+            '${content.name} • Album • ${transformedSongs.length} songs';
+        _totalDuration = Duration(
+          seconds: transformedSongs.fold(
+            0,
+            (sum, song) => sum + song.duration.inSeconds,
+          ),
+        );
+      } else {
+        final contentData = await _contentService.loadContentSongs(content);
+        final totalSeconds = contentData['allSongs'].fold(
+          0,
+          (sum, song) => sum + song.duration.inSeconds,
+        );
+        _songs = contentData['songs'];
+        _allSongs = contentData['allSongs'];
+        _contentDescription = contentData['description'];
+        _totalDuration = Duration(seconds: totalSeconds);
+      }
+
       _isLoading = false;
       notifyListeners();
     } catch (e) {
