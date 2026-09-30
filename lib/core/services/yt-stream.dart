@@ -14,7 +14,7 @@ class StreamProvider {
       debugPrint('StreamProvider.fetch: fetching manifest for $videoId');
       final res = await yt.videos.streamsClient.getManifest(
         videoId,
-        ytClients: [YoutubeApiClient.androidVr, YoutubeApiClient.ios],
+        ytClients: [YoutubeApiClient.ios, YoutubeApiClient.androidVr],
       );
       final audio = res.audioOnly;
       debugPrint('StreamProvider.fetch: manifest fetched - audioOnly count=${audio.length}');
@@ -48,21 +48,30 @@ class StreamProvider {
     }
   }
 
+  List<Audio> get _sorted => [...(audioFormats ?? const <Audio>[])]..sort((a, b) => a.bitrate.compareTo(b.bitrate));
+
   Audio? get highestQualityAudio {
-    if (audioFormats == null || audioFormats!.isEmpty) return null;
-    return audioFormats!.lastWhere((item) => item.itag == 251 || item.itag == 140, orElse: () => audioFormats!.first);
+    final sorted = _sorted;
+    if (sorted.isEmpty) return null;
+    final mp4a = sorted.where((item) => item.audioCodec == Codec.mp4a).toList();
+    return mp4a.isNotEmpty ? mp4a.last : sorted.last;
   }
+
   Audio? get highestBitrateMp4aAudio {
-    if (audioFormats == null || audioFormats!.isEmpty) return null;
-    return audioFormats!.lastWhere((item) => item.itag == 140 || item.itag == 139, orElse: () => audioFormats!.first);
+    final sorted = _sorted.where((item) => item.audioCodec == Codec.mp4a).toList();
+    return sorted.isNotEmpty ? sorted.last : null;
   }
+
   Audio? get highestBitrateOpusAudio {
-    if (audioFormats == null || audioFormats!.isEmpty) return null;
-    return audioFormats!.lastWhere((item) => item.itag == 251 || item.itag == 250, orElse: () => audioFormats!.first);
+    final sorted = _sorted.where((item) => item.audioCodec == Codec.opus).toList();
+    return sorted.isNotEmpty ? sorted.last : null;
   }
+
   Audio? get lowQualityAudio {
-    if (audioFormats == null || audioFormats!.isEmpty) return null;
-    return audioFormats!.lastWhere((item) => item.itag == 249 || item.itag == 139, orElse: () => audioFormats!.first);
+    final sorted = _sorted;
+    if (sorted.isEmpty) return null;
+    final mp4a = sorted.where((item) => item.audioCodec == Codec.mp4a).toList();
+    return mp4a.isNotEmpty ? mp4a.first : sorted.first;
   }
 }
 
