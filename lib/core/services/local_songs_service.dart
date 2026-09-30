@@ -65,11 +65,11 @@ class LocalSongsService {
     }
   }
 
-  Future<Uint8List?> queryArtwork(int id, {int size = 500}) async {
+  Future<Uint8List?> queryArtwork(int id, {int size = 256}) async {
     try {
       final result = await _channel.invokeMethod<Uint8List>('queryArtwork', {
         'id': id,
-        'size': size.clamp(128, 1024),
+        'size': size.clamp(128, 512),
       });
       return result;
     } on PlatformException catch (e) {
