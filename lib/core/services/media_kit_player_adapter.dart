@@ -149,7 +149,6 @@ class MediaKitPlayerAdapter {
   Stream<Duration> get bufferedPositionStream => _bufferSC.stream;
   Stream<bool> get completedStream => _completedSC.stream;
   Stream<bool> get bufferingStream => _bufferingSC.stream;
-  Stream<int> get playlistIndexStream => _player.stream.index;
 
   bool get currentPlaying => _player.state.playing;
   Duration get currentPosition => _player.state.position;
