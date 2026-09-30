@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -12,13 +13,23 @@ class LocalSongsService {
   factory LocalSongsService() => _instance;
   LocalSongsService._();
 
+  Future<Permission> _audioPermission() async {
+    if (!Platform.isAndroid) return Permission.storage;
+
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+    return androidInfo.version.sdkInt >= 33
+        ? Permission.audio
+        : Permission.storage;
+  }
+
   Future<List<Map<String, dynamic>>> querySongs() async {
     if (!Platform.isAndroid) return [];
 
-    final permission = await Permission.audio.status;
-    if (!permission.isGranted) {
-      final requested = await Permission.audio.request();
-      if (!requested.isGranted) return [];
+    final permission = await _audioPermission();
+    var status = await permission.status;
+    if (!status.isGranted) {
+      status = await permission.request();
+      if (!status.isGranted) return [];
     }
 
     try {
