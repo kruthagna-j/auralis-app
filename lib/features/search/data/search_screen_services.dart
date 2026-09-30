@@ -27,6 +27,7 @@ class SearchScreenServices {
   static const int _maxSearchQueueSize = 250;
   static const int _initialRadioBatchLimit = 50;
   static const int _extraRadioFetchCount = 6;
+  static const int _maxExpandedSearchQueries = 5;
 
   Future<List<String>> loadSearchHistory() async {
     final box = await SettingsStorageService.getBox();
@@ -114,6 +115,65 @@ class SearchScreenServices {
     }
   }
 
+  List<String> _buildExpandedSearchQueries(String query) {
+    final normalized = query.trim().replaceAll(RegExp(r'\s+'), ' ');
+    if (normalized.isEmpty) return [];
+
+    final words = normalized
+        .split(' ')
+        .map((word) => word.trim())
+        .where((word) => word.length >= 2)
+        .toList();
+
+    final queries = <String>[normalized];
+
+    if (words.length >= 2) {
+      queries.add(words.take(2).join(' '));
+      queries.add(words.reversed.take(2).toList().reversed.join(' '));
+    }
+
+    for (final word in words) {
+      if (queries.length >= _maxExpandedSearchQueries) break;
+      if (!queries.contains(word)) queries.add(word);
+    }
+
+    return queries.take(_maxExpandedSearchQueries).toList();
+  }
+
+  List<dynamic> _mergeUniqueResults(Iterable<List<dynamic>> resultLists) {
+    final merged = <dynamic>[];
+    final seen = <String>{};
+
+    for (final results in resultLists) {
+      for (final result in results) {
+        String? key;
+        try {
+          key = result.videoId?.toString();
+        } catch (_) {}
+        if (key == null || key.isEmpty) {
+          try {
+            key = result.albumId?.toString();
+          } catch (_) {}
+        }
+        if (key == null || key.isEmpty) {
+          try {
+            key = result.artistId?.toString();
+          } catch (_) {}
+        }
+        if (key == null || key.isEmpty) {
+          try {
+            key = result.playlistId?.toString();
+          } catch (_) {}
+        }
+        key ??= result.toString();
+
+        if (seen.add(key)) merged.add(result);
+      }
+    }
+
+    return merged;
+  }
+
   Future<Map<String, List<dynamic>>> performSearch(
     String query,
     SearchMode mode,
@@ -129,21 +189,56 @@ class SearchScreenServices {
     if (mode == SearchMode.youtube) {
       final videos = await fetchYouTubeVideos(query);
       return {'Videos': videos};
-    } else {
-      final results = await Future.wait([
-        _ytMusic.searchSongs(query),
-        _ytMusic.searchAlbums(query),
-        _ytMusic.searchArtists(query),
-        _ytMusic.searchPlaylists(query),
-      ]);
-
-      return {
-        'Songs': results[0],
-        'Albums': results[1],
-        'Artists': results[2],
-        'Playlists': results[3],
-      };
     }
+
+    final expandedQueries = _buildExpandedSearchQueries(query);
+
+    final songResults = await Future.wait(
+      expandedQueries.map((q) async {
+        try {
+          return await _ytMusic.searchSongs(q);
+        } catch (_) {
+          return <dynamic>[];
+        }
+      }),
+    );
+
+    final albumResults = await Future.wait(
+      expandedQueries.take(3).map((q) async {
+        try {
+          return await _ytMusic.searchAlbums(q);
+        } catch (_) {
+          return <dynamic>[];
+        }
+      }),
+    );
+
+    final artistResults = await Future.wait(
+      expandedQueries.take(3).map((q) async {
+        try {
+          return await _ytMusic.searchArtists(q);
+        } catch (_) {
+          return <dynamic>[];
+        }
+      }),
+    );
+
+    final playlistResults = await Future.wait(
+      expandedQueries.take(3).map((q) async {
+        try {
+          return await _ytMusic.searchPlaylists(q);
+        } catch (_) {
+          return <dynamic>[];
+        }
+      }),
+    );
+
+    return {
+      'Songs': _mergeUniqueResults(songResults),
+      'Albums': _mergeUniqueResults(albumResults),
+      'Artists': _mergeUniqueResults(artistResults),
+      'Playlists': _mergeUniqueResults(playlistResults),
+    };
   }
 
   Future<void> playSong(
