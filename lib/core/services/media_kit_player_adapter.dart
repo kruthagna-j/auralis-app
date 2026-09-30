@@ -30,15 +30,10 @@ class MediaKitPlayerAdapter {
   Player get rawPlayer => _player;
   bool get isNextTrackReady => _nextPlayerReady;
 
-  static const Map<String, String> _youtubeHeaders = {
-    'User-Agent': 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/131.0 Mobile Safari/537.36',
-    'Referer': 'https://www.youtube.com/',
-    'Accept': '*/*',
-  };
-
   Future<void> openUri(String uri, {bool play = false, Map<String, String>? httpHeaders}) async {
     _cancelPrebuffer();
-    await _player.open(Media(uri, httpHeaders: httpHeaders ?? _youtubeHeaders), play: play);
+    final media = httpHeaders == null ? Media(uri) : Media(uri, httpHeaders: httpHeaders);
+    await _player.open(media, play: play);
   }
 
   Future<void> openPath(String path, {bool play = false}) async {
@@ -66,14 +61,13 @@ class MediaKitPlayerAdapter {
 
   Future<void> applyFilterGraphToNextPlayer(String graph) async {
     final next = _nextPlayer;
-    if (next == null) return;
-    await _applyFilterGraphToPlayer(next, graph);
+    if (next != null) await _applyFilterGraphToPlayer(next, graph);
   }
 
   Future<void> prebufferUri(String uri, {double? volume}) async {
     await _initNextPlayer(volume: volume);
     try {
-      await _nextPlayer!.open(Media(uri, httpHeaders: _youtubeHeaders), play: false);
+      await _nextPlayer!.open(Media(uri), play: false);
       _nextPlayerReady = true;
       debugPrint('[Prebuffer] URI ready');
     } catch (e) {
@@ -154,7 +148,6 @@ class MediaKitPlayerAdapter {
   Duration get currentPosition => _player.state.position;
   Duration get currentBuffered => _player.state.buffer;
   Duration? get currentDuration => _player.state.duration;
-  bool get currentPlayingState => currentPlaying;
 
   Future<void> dispose() async {
     _playingSub?.cancel(); _positionSub?.cancel(); _durationSub?.cancel();
@@ -166,10 +159,16 @@ class MediaKitPlayerAdapter {
   }
 
   Future<void> _applyFilterGraphToPlayer(Player player, String graph) async {
+    Future<void> apply(String value) async {
+      final platform = (player as dynamic).platform;
+      await platform.setProperty('af', value).timeout(const Duration(milliseconds: 800));
+    }
     try {
-      await (player as dynamic).setAudioFilterGraph(graph);
-    } catch (e) {
-      debugPrint('Audio filter graph is unavailable in this media_kit version: $e');
+      await apply(graph);
+      return;
+    } catch (_) {}
+    if (graph.isNotEmpty) {
+      try { await apply('lavfi=[$graph]'); } catch (_) {}
     }
   }
 }
