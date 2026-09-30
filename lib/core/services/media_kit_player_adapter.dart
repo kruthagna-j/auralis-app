@@ -33,8 +33,6 @@ class MediaKitPlayerAdapter {
       : _player = player ??
             Player(
               configuration: const PlayerConfiguration(
-                // Keep enough buffering for smooth playback without reserving
-                // a large amount of RAM on phones with limited memory.
                 bufferSize: 16 * 1024 * 1024,
               ),
             ) {
@@ -45,9 +43,19 @@ class MediaKitPlayerAdapter {
 
   bool get isNextTrackReady => _nextPlayerReady;
 
-  Future<void> openUri(String uri, {bool play = false}) async {
+  Future<void> openUri(
+    String uri, {
+    bool play = false,
+    Map<String, String>? httpHeaders,
+  }) async {
     _cancelPrebuffer();
-    await _player.open(Media(uri), play: play);
+    await _player.open(
+      Media(
+        uri,
+        httpHeaders: httpHeaders,
+      ),
+      play: play,
+    );
   }
 
   Future<void> openPath(String path, {bool play = false}) async {
@@ -240,52 +248,30 @@ class MediaKitPlayerAdapter {
     }
   }
 
-  Future<void> _applyFilterGraphToPlayer(Player player, String graph) async {
-    Future<void> apply(String value) async {
-      final platform = (player as dynamic).platform;
-      if (platform is NativePlayer) {
-        await platform
-            .setProperty('af', value)
-            .timeout(const Duration(milliseconds: 800));
-        return;
-      }
-      await platform
-          .setProperty('af', value)
-          .timeout(const Duration(milliseconds: 800));
-    }
-
-    try {
-      await apply(graph);
-      return;
-    } catch (_) {}
-
-    if (graph.isNotEmpty) {
-      try {
-        await apply('lavfi=[$graph]');
-      } catch (_) {}
-    }
-  }
-
-  Future<void> applyFilterGraphToNextPlayer(String graph) async {
-    if (_nextPlayer != null) {
-      await _applyFilterGraphToPlayer(_nextPlayer!, graph);
-    }
-  }
+  bool get currentPlayingState => currentPlaying;
 
   Future<void> dispose() async {
-    _cancelPrebuffer();
     _playingSub?.cancel();
     _positionSub?.cancel();
     _durationSub?.cancel();
     _bufferSub?.cancel();
     _completedSub?.cancel();
     _bufferingSub?.cancel();
+    _cancelPrebuffer();
+    await _player.dispose();
     await _playingSC.close();
     await _positionSC.close();
     await _durationSC.close();
     await _bufferSC.close();
     await _completedSC.close();
     await _bufferingSC.close();
-    await _player.dispose();
+  }
+
+  Future<void> _applyFilterGraphToPlayer(Player player, String graph) async {
+    try {
+      await player.setAudioFilterGraph(graph);
+    } catch (e) {
+      debugPrint('Failed to apply audio filter graph: $e');
+    }
   }
 }
