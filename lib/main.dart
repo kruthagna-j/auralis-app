@@ -129,11 +129,7 @@ Future<void> main() async {
       FlutterError.onError = (FlutterErrorDetails details) {
         talker.handle(details.exception, details.stack ?? StackTrace.current, 'FlutterError.onError');
         try {
-          GetIt.I<CrashLogService>().recordError(
-            details.exception,
-            details.stack ?? StackTrace.current,
-            'FlutterError.onError',
-          );
+          GetIt.I<CrashLogService>().recordError(details.exception, details.stack ?? StackTrace.current, 'FlutterError.onError');
         } catch (_) {}
         FlutterError.presentError(details);
       };
@@ -166,70 +162,137 @@ Future<void> main() async {
       }
 
       if (Platform.isAndroid) {
-        await IntentService.init();
+        final session = await AudioSession.instance;
+        await session.configure(const AudioSessionConfiguration.music());
       }
+      if (Platform.isWindows) await SmtcService.ensureInitialized();
+      await MetadataGod.initialize();
 
-      final playerProvider = PlayerProvider();
-      GetIt.I.registerSingleton<PlayerProvider>(playerProvider);
       final downloadProvider = DownloadProvider();
-      GetIt.I.registerSingleton<DownloadProvider>(downloadProvider);
-      final queuedProvider = QueuedProvider();
-      GetIt.I.registerSingleton<QueuedProvider>(queuedProvider);
-      final settings = GetIt.I<SettingsProvider>();
-      final favoriteSongProvider = FavoriteSongProvider();
-      GetIt.I.registerSingleton<FavoriteSongProvider>(favoriteSongProvider);
-      final favoriteArtistProvider = FavoriteArtistProvider();
-      GetIt.I.registerSingleton<FavoriteArtistProvider>(favoriteArtistProvider);
-      final libraryProvider = LibraryProvider();
-      GetIt.I.registerSingleton<LibraryProvider>(libraryProvider);
-      final lyricsProvider = LyricsProvider();
-      GetIt.I.registerSingleton<LyricsProvider>(lyricsProvider);
-      final homeScreenProvider = HomeScreenProvider();
-      GetIt.I.registerSingleton<HomeScreenProvider>(homeScreenProvider);
-      final trendingProvider = TrendingProvider();
-      GetIt.I.registerSingleton<TrendingProvider>(trendingProvider);
-      final playlistAlbumLibraryProvider = PlaylistAlbumLibraryProvider();
-      GetIt.I.registerSingleton<PlaylistAlbumLibraryProvider>(playlistAlbumLibraryProvider);
-      final otaProvider = OTAProvider();
-      GetIt.I.registerSingleton<OTAProvider>(otaProvider);
+      final queueProvider = QueueProvider();
       final statsProvider = StatsProvider();
-      GetIt.I.registerSingleton<StatsProvider>(statsProvider);
+
+      talker.info('Auralis app starting');
 
       runApp(
-        EasyLocalization(
-          supportedLocales: const [
-            Locale('en'), Locale('hi'), Locale('te'), Locale('ta'), Locale('kn'),
-            Locale('ml'), Locale('bn'), Locale('mr'), Locale('gu'), Locale('ur'),
-            Locale('es'), Locale('fr'), Locale('de'), Locale('ru'), Locale('ja'),
-            Locale('ko'), Locale('zh'), Locale('pt'), Locale('tr'), Locale('vi'), Locale('ar'),
-          ],
-          path: 'assets/translations',
-          fallbackLocale: const Locale('en'),
-          startLocale: Locale(settings.languageCode),
+        TalkerWrapper(
+          talker: talker,
+          options: const TalkerWrapperOptions(enableErrorAlerts: true),
           child: MultiProvider(
             providers: [
-              ChangeNotifierProvider.value(value: settings),
-              ChangeNotifierProvider.value(value: playerProvider),
-              ChangeNotifierProvider.value(value: downloadProvider),
-              ChangeNotifierProvider.value(value: queuedProvider),
-              ChangeNotifierProvider.value(value: favoriteSongProvider),
-              ChangeNotifierProvider.value(value: favoriteArtistProvider),
-              ChangeNotifierProvider.value(value: libraryProvider),
-              ChangeNotifierProvider.value(value: lyricsProvider),
-              ChangeNotifierProvider.value(value: homeScreenProvider),
-              ChangeNotifierProvider.value(value: trendingProvider),
-              ChangeNotifierProvider.value(value: playlistAlbumLibraryProvider),
-              ChangeNotifierProvider.value(value: otaProvider),
-              ChangeNotifierProvider.value(value: statsProvider),
               ChangeNotifierProvider.value(value: connectivityProvider),
+              ChangeNotifierProvider(lazy: false, create: (_) => HomeScreenProvider()..initialize()),
+              ChangeNotifierProvider(create: (_) => TrendingProvider()),
+              ChangeNotifierProvider.value(value: queueProvider),
+              ChangeNotifierProvider.value(value: downloadProvider),
+              ChangeNotifierProvider.value(value: statsProvider),
+              ChangeNotifierProvider(create: (_) => FavoriteSongProvider()),
+              ChangeNotifierProvider(
+                create: (context) => PlayerProvider(
+                  Provider.of<QueueProvider>(context, listen: false),
+                  Provider.of<DownloadProvider>(context, listen: false),
+                  GetIt.I<VideoInfoProvider>(),
+                  Provider.of<StatsProvider>(context, listen: false),
+                  Provider.of<FavoriteSongProvider>(context, listen: false),
+                ),
+              ),
+              ChangeNotifierProvider(lazy: false, create: (_) => PlaylistAlbumLibraryProvider()..loadAll()),
+              ChangeNotifierProvider.value(value: settingsProvider),
+              ChangeNotifierProvider(lazy: false, create: (_) => FavoriteArtistProvider()..loadFavoriteArtists()),
+              ChangeNotifierProvider(
+                create: (context) => LibraryProvider(
+                  Provider.of<PlayerProvider>(context, listen: false),
+                  Provider.of<DownloadProvider>(context, listen: false),
+                  Provider.of<FavoriteSongProvider>(context, listen: false),
+                  Provider.of<SettingsProvider>(context, listen: false),
+                ),
+              ),
+              ChangeNotifierProvider(create: (context) => LyricsProvider(Provider.of<PlayerProvider>(context, listen: false))),
+              ChangeNotifierProvider(create: (_) => OTAProvider()),
+              ChangeNotifierProvider.value(value: GetIt.I<VideoInfoProvider>()),
             ],
-            child: const SplashScreen(),
+            child: EasyLocalization(
+              supportedLocales: const [
+                Locale('en'), Locale('hi'), Locale('es'), Locale('fr'), Locale('de'), Locale('ru'),
+                Locale('uk'), Locale('bn'), Locale('ja'), Locale('zh'), Locale('ur'), Locale('te'),
+                Locale('ta'), Locale('mr'), Locale('tr'), Locale('gu'), Locale('kn'), Locale('ko'),
+                Locale('id'), Locale('pt'), Locale('vi'), Locale('ar'),
+              ],
+              path: 'assets/translations',
+              fallbackLocale: const Locale('en'),
+              child: const AuralisApp(),
+            ),
           ),
         ),
       );
     },
-    (error, stack) {
-      talker.handle(error, stack, 'Uncaught zone error');
+    (error, stackTrace) {
+      talker.handle(error, stackTrace, 'Uncaught zone error');
+      try {
+        if (GetIt.I.isRegistered<CrashLogService>()) {
+          GetIt.I<CrashLogService>().recordError(error, stackTrace, 'Uncaught zone error');
+        }
+      } catch (_) {}
     },
   );
+}
+
+class AuralisApp extends StatefulWidget {
+  const AuralisApp({super.key});
+  @override
+  State<AuralisApp> createState() => _AuralisAppState();
+}
+
+class _AuralisAppState extends State<AuralisApp> with WidgetsBindingObserver {
+  IntentService? _intentService;
+  WindowsFileService? _windowsFileService;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    if (Platform.isAndroid) {
+      _intentService = IntentService(
+        Provider.of<PlayerProvider>(context, listen: false),
+        Provider.of<QueueProvider>(context, listen: false),
+      );
+      _intentService?.init();
+    }
+    if (Platform.isWindows) {
+      _windowsFileService = WindowsFileService(Provider.of<PlayerProvider>(context, listen: false));
+      WidgetsBinding.instance.addPostFrameCallback((_) => _windowsFileService?.init());
+    }
+  }
+
+  @override
+  void dispose() {
+    _intentService?.dispose();
+    _windowsFileService?.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    super.didChangePlatformBrightness();
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settingsProvider = Provider.of<SettingsProvider>(context);
+    return MaterialApp(
+      navigatorKey: settingsProvider.navigatorKey,
+      navigatorObservers: [],
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
+      title: 'Auralis',
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: settingsProvider.themeMode,
+      builder: AppTextStyles.appBuilder,
+      home: const SplashScreen(),
+    );
+  }
 }
