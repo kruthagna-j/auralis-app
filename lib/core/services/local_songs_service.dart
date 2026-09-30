@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -12,30 +13,69 @@ class LocalSongsService {
   LocalSongsService._();
 
   Future<List<Map<String, dynamic>>> querySongs() async {
-    if (Platform.isAndroid) {
-      final permission = await Permission.audio.status;
-      if (!permission.isGranted) {
-        final requested = await Permission.audio.request();
-        if (!requested.isGranted) {
-          return [];
-        }
-      }
+    if (!Platform.isAndroid) return [];
+
+    final permission = await Permission.audio.status;
+    if (!permission.isGranted) {
+      final requested = await Permission.audio.request();
+      if (!requested.isGranted) return [];
     }
 
-    final result = await _channel.invokeMethod<List>('querySongs');
-    if (result == null) return [];
-    return result.cast<Map>().map((m) => Map<String, dynamic>.from(m)).toList();
+    try {
+      final result = await _channel.invokeMethod<List>('querySongs');
+      if (result == null || result.isEmpty) return [];
+
+      final songs = <Map<String, dynamic>>[];
+      final seenIds = <String>{};
+
+      for (final raw in result) {
+        if (raw is! Map) continue;
+        final song = Map<String, dynamic>.from(raw);
+        final id = song['id']?.toString() ?? '';
+        final path = song['data']?.toString() ?? '';
+        final title = song['title']?.toString().trim() ?? '';
+        final durationMs = (song['durationMs'] as num?)?.toInt() ?? 0;
+
+        if (id.isEmpty || path.isEmpty || title.isEmpty || durationMs <= 0) {
+          continue;
+        }
+        if (!seenIds.add(id)) continue;
+
+        songs.add(song);
+      }
+
+      return songs;
+    } on PlatformException catch (e) {
+      debugPrint('Local music query failed: ${e.code}: ${e.message}');
+      return [];
+    } catch (e) {
+      debugPrint('Local music query failed: $e');
+      return [];
+    }
   }
 
   Future<Uint8List?> queryArtwork(int id, {int size = 500}) async {
-    final result = await _channel.invokeMethod<Uint8List>('queryArtwork', {
-      'id': id,
-      'size': size,
-    });
-    return result;
+    try {
+      final result = await _channel.invokeMethod<Uint8List>('queryArtwork', {
+        'id': id,
+        'size': size.clamp(128, 1024),
+      });
+      return result;
+    } on PlatformException catch (e) {
+      debugPrint('Local artwork query failed: ${e.code}: ${e.message}');
+      return null;
+    } catch (e) {
+      debugPrint('Local artwork query failed: $e');
+      return null;
+    }
   }
 
   Future<void> scanMedia(String path) async {
-    await _channel.invokeMethod('scanMedia', {'path': path});
+    if (path.isEmpty) return;
+    try {
+      await _channel.invokeMethod('scanMedia', {'path': path});
+    } catch (e) {
+      debugPrint('Media scan failed: $e');
+    }
   }
 }
