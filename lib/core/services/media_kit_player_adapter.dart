@@ -33,7 +33,9 @@ class MediaKitPlayerAdapter {
       : _player = player ??
             Player(
               configuration: const PlayerConfiguration(
-                bufferSize: 64 * 1024 * 1024, // 64 MB to cache more eagerly
+                // Keep enough buffering for smooth playback without reserving
+                // a large amount of RAM on phones with limited memory.
+                bufferSize: 16 * 1024 * 1024,
               ),
             ) {
     _bindPlayerStreams(_player);
@@ -159,7 +161,7 @@ class MediaKitPlayerAdapter {
     _cancelPrebuffer();
     _nextPlayer = Player(
       configuration: const PlayerConfiguration(
-        bufferSize: 64 * 1024 * 1024, // 64 MB to cache more eagerly
+        bufferSize: 16 * 1024 * 1024,
       ),
     );
     if (volume != null) {
