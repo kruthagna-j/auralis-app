@@ -427,18 +427,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                 Icon(
                                   Icons.person,
                                   size: AppDimens.iconHero,
-                                  color: isDarkMode
-                                      ? Colors.white70
-                                      : Colors.black54,
+                                  color: isDarkMode ? Colors.white70 : Colors.black54,
                                 ),
                                 SizedBox(height: AppDimens.spacingLg),
                                 Text(
                                   'no_favorite_artists'.tr(),
                                   style: AppTextStyles.subtitle(
                                     isDarkMode: isDarkMode,
-                                    color: isDarkMode
-                                        ? Colors.white70
-                                        : Colors.black54,
+                                    color: isDarkMode ? Colors.white70 : Colors.black54,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -446,16 +442,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                 ElevatedButton.icon(
                                   icon: Icon(
                                     Icons.add,
-                                    color: isDarkMode
-                                        ? Colors.white
-                                        : Colors.black,
+                                    color: isDarkMode ? Colors.white : Colors.black,
                                   ),
                                   label: Text(
                                     'Add Favorite Artist',
                                     style: TextStyle(
-                                      color: isDarkMode
-                                          ? Colors.white
-                                          : Colors.black,
+                                      color: isDarkMode ? Colors.white : Colors.black,
                                     ),
                                   ),
                                   style: ElevatedButton.styleFrom(
@@ -465,17 +457,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                       vertical: AppDimens.paddingMd,
                                     ),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                        AppDimens.radiusXxl,
-                                      ),
+                                      borderRadius: BorderRadius.circular(AppDimens.radiusXxl),
                                     ),
                                   ),
                                   onPressed: () {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) =>
-                                            FavoriteArtistsScreen(),
+                                        builder: (context) => FavoriteArtistsScreen(),
                                       ),
                                     );
                                   },
@@ -509,18 +498,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     backgroundImage: artist['thumbnailUrl'] != null
                         ? CachedNetworkImageProvider(artist['thumbnailUrl'])
                         : null,
-                    backgroundColor: isDarkMode
-                        ? Colors.grey[800]
-                        : Colors.grey[200],
+                    backgroundColor: isDarkMode ? Colors.grey[800] : Colors.grey[200],
                     child: artist['thumbnailUrl'] == null
                         ? Icon(Icons.person, color: accentColor)
                         : null,
                   ),
                   title: Text(
                     artist['name'],
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black,
-                    ),
+                    style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
                   ),
                   onTap: () {
                     Navigator.push(
@@ -872,22 +857,17 @@ class _LibraryScreenState extends State<LibraryScreen> {
           int.tryParse(song['id'].toString()) != null) {
         final localPath = song['localPath'];
         if (localPath != null) {
-          final songsWithArt = List<Map<String, dynamic>>.from(songs);
           final songIndex = songs.indexWhere((s) => s['id'] == song['id']);
 
-          for (var i = 0; i < songsWithArt.length; i++) {
-            final artUri = await _getArtworkUri(songsWithArt[i]);
-            if (artUri.scheme == 'file') {
-              songsWithArt[i]['thumbnail'] = artUri.toFilePath();
-            } else {
-              songsWithArt[i]['thumbnail'] = artUri.toString();
-            }
-          }
-
+          // Start local playback immediately. Artwork generation used to query
+          // every local song in the queue before opening the selected file,
+          // which made local playback feel slow. Local artwork is already
+          // loaded on demand by LibrarySongListTile, so it is not required
+          // before the player can start.
           await playerProvider.playerService.playLocalAudioWithQueue(
             localPath,
-            songsWithArt[songIndex],
-            songsWithArt,
+            song,
+            songs,
             songIndex,
           );
         }
@@ -982,230 +962,61 @@ class _LibraryScreenState extends State<LibraryScreen> {
       case 'recently_played':
         currentSongList = libraryProvider.lastPlayed;
         break;
+      case 'local_music':
+        currentSongList = libraryProvider.localSongs;
+        break;
       default:
-        return;
+        currentSongList = [];
     }
 
-    songsToPlay = currentSongList
-        .where((song) => _selectedSongs.contains(song['id'].toString()))
-        .toList();
+    for (final song in currentSongList) {
+      if (_selectedSongs.contains(song['id'].toString())) {
+        songsToPlay.add(song);
+      }
+    }
 
     if (songsToPlay.isNotEmpty) {
       _playSong(songsToPlay.first, context, _currentTab, songsToPlay);
     }
-    setState(() {
-      _isSelectionMode = false;
-      _selectedSongs.clear();
-    });
-  }
-
-  void _deleteSelectedSongs(bool isDarkMode) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: isDarkMode
-              ? MainScreenColors.darkSurfaceColor
-              : Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(
-            'delete_songs'.tr(),
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.white : Colors.black,
-            ),
-          ),
-          content: Text(
-            'are_you_sure_you_want_to_delete_selected_songs'.tr(
-              args: [_selectedSongs.length.toString()],
-            ),
-            style: TextStyle(
-              color: isDarkMode ? Colors.white70 : Colors.black87,
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text(
-                'cancel'.tr(),
-                style: TextStyle(color: Theme.of(context).colorScheme.primary),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text(
-                'delete'.tr(),
-                style: const TextStyle(color: Colors.red),
-              ),
-              onPressed: () async {
-                final favoriteProvider = Provider.of<FavoriteSongProvider>(
-                  context,
-                  listen: false,
-                );
-                final downloadProvider = Provider.of<DownloadProvider>(
-                  context,
-                  listen: false,
-                );
-                final playerProvider = Provider.of<PlayerProvider>(
-                  context,
-                  listen: false,
-                );
-
-                for (String songId in _selectedSongs) {
-                  switch (_currentTab) {
-                    case 'favorites':
-                      await favoriteProvider.removeLikedSong(songId);
-                      break;
-                    case 'downloads':
-                      await downloadProvider.deleteDownloadedSong(songId);
-                      break;
-                    case 'recently_played':
-                      await playerProvider.removeLastPlayed(songId);
-                      break;
-                  }
-                }
-
-                setState(() {
-                  _isSelectionMode = false;
-                  _selectedSongs.clear();
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Widget _buildSelectionMenu(Color accentColor, bool isDarkMode) {
-    return Material(
-      elevation: 4,
-      color: Theme.of(context).colorScheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimens.paddingLg,
-          vertical: AppDimens.paddingSm,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Checkbox(
-                  value: _areAllSongsSelected(),
-                  onChanged: (value) {
-                    setState(() {
-                      if (value == true) {
-                        _selectAllSongs();
-                      } else {
-                        _selectedSongs.clear();
-                        _isSelectionMode = false;
-                      }
-                    });
-                  },
-                  activeColor: accentColor,
-                  checkColor: Theme.of(context).colorScheme.onSurface,
-                ),
-                Text(
-                  '${_selectedSongs.length} selected',
-                  style: AppTextStyles.subtitle(
-                    isDarkMode: isDarkMode,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ).copyWith(fontWeight: AppTextStyles.weightBold),
-                ),
-              ],
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimens.paddingLg,
+        vertical: AppDimens.paddingSm,
+      ),
+      color: accentColor.withValues(alpha: 0.15),
+      child: Row(
+        children: [
+          Text(
+            '${_selectedSongs.length} selected',
+            style: AppTextStyles.bodyMd(
+              isDarkMode: isDarkMode,
+              color: accentColor,
             ),
-            Row(
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.play_arrow,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  onPressed: _selectedSongs.isNotEmpty
-                      ? _playSelectedSongs
-                      : null,
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.delete,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  onPressed: _selectedSongs.isNotEmpty
-                      ? () => _deleteSelectedSongs(isDarkMode)
-                      : null,
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.close,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _isSelectionMode = false;
-                      _selectedSongs.clear();
-                    });
-                  },
-                ),
-              ],
+          ),
+          const Spacer(),
+          IconButton(
+            tooltip: 'Play selected',
+            icon: Icon(Icons.play_arrow, color: accentColor),
+            onPressed: _playSelectedSongs,
+          ),
+          IconButton(
+            tooltip: 'Clear selection',
+            icon: Icon(
+              Icons.close,
+              color: isDarkMode ? Colors.white : Colors.black,
             ),
-          ],
-        ),
+            onPressed: () {
+              setState(() {
+                _selectedSongs.clear();
+                _isSelectionMode = false;
+              });
+            },
+          ),
+        ],
       ),
     );
-  }
-
-  bool _areAllSongsSelected() {
-    final libraryProvider = Provider.of<LibraryProvider>(
-      context,
-      listen: false,
-    );
-    List<Map<String, dynamic>> currentSongList;
-    switch (_currentTab) {
-      case 'favorites':
-        currentSongList = libraryProvider.likedSongs;
-        break;
-      case 'downloads':
-        currentSongList = libraryProvider.downloadedSongs;
-        break;
-      case 'recently_played':
-        currentSongList = libraryProvider.lastPlayed;
-        break;
-      default:
-        return false;
-    }
-    return _selectedSongs.length == currentSongList.length &&
-        currentSongList.isNotEmpty;
-  }
-
-  void _selectAllSongs() {
-    final libraryProvider = Provider.of<LibraryProvider>(
-      context,
-      listen: false,
-    );
-    List<Map<String, dynamic>> currentSongList;
-    switch (_currentTab) {
-      case 'favorites':
-        currentSongList = libraryProvider.likedSongs;
-        break;
-      case 'downloads':
-        currentSongList = libraryProvider.downloadedSongs;
-        break;
-      case 'recently_played':
-        currentSongList = libraryProvider.lastPlayed;
-        break;
-      default:
-        return;
-    }
-    setState(() {
-      _selectedSongs.clear();
-      _selectedSongs.addAll(
-        currentSongList.map((song) => song['id'].toString()),
-      );
-    });
   }
 }
