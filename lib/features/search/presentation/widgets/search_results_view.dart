@@ -75,6 +75,9 @@ class SearchResultsView extends StatelessWidget {
           itemCount: songs.length,
           itemBuilder: (context, index) {
             final song = songs[index];
+            final thumbnailUrl = song.thumbnails.isNotEmpty
+                ? song.thumbnails.first.url
+                : '';
             return ListTile(
               dense: true,
               visualDensity: const VisualDensity(vertical: 0),
@@ -85,7 +88,7 @@ class SearchResultsView extends StatelessWidget {
               leading: ClipRRect(
                 borderRadius: BorderRadius.circular(AppDimens.radiusSm),
                 child: CachedNetworkImage(
-                  imageUrl: song.thumbnails.first.url,
+                  imageUrl: thumbnailUrl,
                   width: AppDimens.shimmerListTile,
                   height: AppDimens.shimmerListTile,
                   fit: BoxFit.cover,
@@ -98,7 +101,7 @@ class SearchResultsView extends StatelessWidget {
                   errorWidget: (context, url, error) => Container(
                     color: MainScreenColors.getSurfaceColor(isDarkMode),
                     child: Icon(
-                      Icons.error,
+                      Icons.music_note,
                       color: MainScreenColors.getTextColor(isDarkMode),
                     ),
                   ),
@@ -168,7 +171,7 @@ class SearchResultsView extends StatelessWidget {
                   errorWidget: (context, url, error) => Container(
                     color: MainScreenColors.getSurfaceColor(isDarkMode),
                     child: Icon(
-                      Icons.error,
+                      Icons.music_note,
                       color: MainScreenColors.getTextColor(isDarkMode),
                     ),
                   ),
@@ -256,6 +259,9 @@ class SearchResultsView extends StatelessWidget {
     String type,
     BuildContext context,
   ) {
+    final thumbnailUrl = item.thumbnails.isNotEmpty
+        ? item.thumbnails.first.url
+        : '';
     return ListTile(
       dense: true,
       visualDensity: const VisualDensity(vertical: -2),
@@ -268,7 +274,7 @@ class SearchResultsView extends StatelessWidget {
           type == 'artist' ? AppDimens.radiusAvatar : AppDimens.radiusSm,
         ),
         child: CachedNetworkImage(
-          imageUrl: item.thumbnails.first.url,
+          imageUrl: thumbnailUrl,
           width: AppDimens.shimmerListTile,
           height: AppDimens.shimmerListTile,
           fit: BoxFit.cover,
@@ -279,7 +285,7 @@ class SearchResultsView extends StatelessWidget {
           errorWidget: (context, url, error) => Container(
             color: MainScreenColors.getSurfaceColor(isDarkMode),
             child: Icon(
-              Icons.error,
+              Icons.image_not_supported_outlined,
               color: MainScreenColors.getTextColor(isDarkMode),
             ),
           ),
@@ -313,6 +319,9 @@ class SearchResultsView extends StatelessWidget {
     String type,
     BuildContext context,
   ) {
+    final thumbnailUrl = item.thumbnails.isNotEmpty
+        ? item.thumbnails.first.url
+        : '';
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -336,7 +345,7 @@ class SearchResultsView extends StatelessWidget {
                 type == 'artist' ? AppDimens.radiusAvatar : AppDimens.radiusSm,
               ),
               child: CachedNetworkImage(
-                imageUrl: item.thumbnails.first.url,
+                imageUrl: thumbnailUrl,
                 width: AppDimens.shimmerListTile,
                 height: AppDimens.shimmerListTile,
                 fit: BoxFit.cover,
@@ -349,7 +358,7 @@ class SearchResultsView extends StatelessWidget {
                 errorWidget: (context, url, error) => Container(
                   color: MainScreenColors.getSurfaceColor(isDarkMode),
                   child: Icon(
-                    Icons.error,
+                    Icons.image_not_supported_outlined,
                     color: MainScreenColors.getTextColor(isDarkMode),
                   ),
                 ),
