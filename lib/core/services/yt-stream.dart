@@ -12,14 +12,11 @@ class StreamProvider {
     final yt = YoutubeExplode();
     try {
       debugPrint('StreamProvider.fetch: fetching manifest for $videoId');
+      // Use the standard Android client only. Android VR/iOS/Safari can return
+      // GVS/SABR-protected streams that are not directly playable by mpv.
       final res = await yt.videos.streamsClient.getManifest(
         videoId,
-        ytClients: [
-          YoutubeApiClient.ios,
-          YoutubeApiClient.androidVr,
-          YoutubeApiClient.safari,
-        ],
-        fullManifest: true,
+        ytClients: [YoutubeApiClient.android],
         requireWatchPage: true,
       );
       final audio = res.audioOnly;
