@@ -14,10 +14,16 @@ class StreamProvider {
       debugPrint('StreamProvider.fetch: fetching manifest for $videoId');
       final res = await yt.videos.streamsClient.getManifest(
         videoId,
-        ytClients: [YoutubeApiClient.ios, YoutubeApiClient.androidVr],
+        ytClients: [
+          YoutubeApiClient.ios,
+          YoutubeApiClient.androidVr,
+          YoutubeApiClient.safari,
+        ],
+        fullManifest: true,
+        requireWatchPage: true,
       );
       final audio = res.audioOnly;
-      debugPrint('StreamProvider.fetch: manifest fetched - audioOnly count=${audio.length}');
+      debugPrint('StreamProvider.fetch: audioOnly count=${audio.length}, total audio=${res.audio.length}');
       final formats = <Audio>[];
       for (final e in audio) {
         formats.add(Audio(
